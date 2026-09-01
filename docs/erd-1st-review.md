@@ -17,6 +17,14 @@
 | 접속 계정 | `site_access_accounts` + Secret Vault 참조 | 계정은 관리하되 비밀번호를 일반 DB/문서에 저장하지 않음 |
 | 작업자 | `members` + `sites.primary_receiver_id` | `receiver_idx`를 외래키로 보장 |
 
+## 식별자 정책 — 1차 권장안
+
+**UUID를 모든 테이블에 쓸 필요는 없습니다.** 1차 운영 DB는 각 테이블의 내부 키를 `BIGINT IDENTITY`(자동증가 숫자)로 통일합니다. 외래키도 같은 숫자 키를 참조하므로 ERD에 보이는 ID가 많아도 실제로 새 UUID를 계속 입력하거나 관리할 일은 없습니다.
+
+- 원본 고객/프로젝트/사이트 데이터베이스 ID는 **원본 DB 식별자**일 뿐, 새 테이블 행의 PK로 복사하지 않습니다.
+- 나중에 외부 API 공개 ID, 여러 DB 병합, 오프라인 생성·동기화가 필요해질 때만 해당 경계에 `public_id UUID`를 추가합니다.
+- 지금 단계에서는 `id BIGINT` + 관계 FK만으로 충분합니다.
+
 ## ERD
 
 ```mermaid
@@ -33,7 +41,7 @@ erDiagram
     SITES ||--o{ SITE_NOTES : records
 
     CUSTOMERS {
-      uuid id PK
+      bigint id PK
       string name
       string status
       text memo
@@ -41,51 +49,51 @@ erDiagram
       datetime updated_at
     }
     CUSTOMER_CONTACTS {
-      uuid id PK
-      uuid customer_id FK
+      bigint id PK
+      bigint customer_id FK
       string type
       string name
       string value
       boolean is_primary
     }
     CATEGORIES {
-      uuid id PK
-      uuid parent_id FK
+      bigint id PK
+      bigint parent_id FK
       string name
       string code
     }
     PROJECTS {
-      uuid id PK
-      uuid customer_id FK
-      uuid category_id FK
+      bigint id PK
+      bigint customer_id FK
+      bigint category_id FK
       string title
       string status
       text memo
     }
     SITES {
-      uuid id PK
-      uuid project_id FK
-      uuid primary_receiver_id FK
+      bigint id PK
+      bigint project_id FK
+      bigint primary_receiver_id FK
       string type
       string status
       text inspection_memo
     }
     SITE_ENDPOINTS {
-      uuid id PK
-      uuid site_id FK
-      uuid provider_id FK
+      bigint id PK
+      bigint site_id FK
+      bigint provider_id FK
       string endpoint_role
       string url
       boolean is_primary
     }
     PROVIDERS {
-      uuid id PK
+      bigint id PK
       string provider_type
       string name
     }
     SITE_ACCESS_ACCOUNTS {
-      uuid id PK
-      uuid site_id FK
+      bigint id PK
+      bigint site_id FK
       string protocol
       string auth_method
       string login_id
@@ -93,13 +101,13 @@ erDiagram
       string status
     }
     MEMBERS {
-      uuid id PK
+      bigint id PK
       string name
       string status
     }
     SITE_NOTES {
-      uuid id PK
-      uuid site_id FK
+      bigint id PK
+      bigint site_id FK
       string note_type
       text content
     }
@@ -111,7 +119,7 @@ erDiagram
 
 | 컬럼 | 타입 | 필수 | 설명 |
 |---|---|---:|---|
-| `id` | UUID | Y | 내부 식별자 |
+| `id` | BIGINT | Y | 내부 식별자 |
 | `name` | VARCHAR(200) | Y | 고객사/개인 표시명 |
 | `status` | VARCHAR(30) | Y | `active`, `inactive`, `lead`, `archived` 등 |
 | `memo` | TEXT | N | 고객 공통 메모. 접속 비밀값 금지 |
@@ -123,7 +131,7 @@ erDiagram
 
 | 컬럼 | 타입 | 필수 | 규칙 |
 |---|---|---:|---|
-| `customer_id` | UUID FK | Y | `customers.id` |
+| `customer_id` | BIGINT FK | Y | `customers.id` |
 | `type` | VARCHAR(30) | Y | `phone`, `email`, `kakao`, `other` |
 | `name` | VARCHAR(100) | N | 담당자명 |
 | `value` | VARCHAR(320) | Y | 전화는 E.164 형식 권장: `+8210…` |
@@ -159,8 +167,8 @@ erDiagram
 
 | 컬럼 | 타입 | 제공 필드 대응 | 설명 |
 |---|---|---|---|
-| `customer_id` | UUID FK | 신규 관계 | 프로젝트 소유 고객 |
-| `category_id` | UUID FK | `parent_idx` | 최하위 또는 선택된 카테고리 |
+| `customer_id` | BIGINT FK | 신규 관계 | 프로젝트 소유 고객 |
+| `category_id` | BIGINT FK | `parent_idx` | 최하위 또는 선택된 카테고리 |
 | `title` | VARCHAR(250) | `title` | 서비스/프로젝트명 |
 | `status` | VARCHAR(30) | `status` | 운영 상태 |
 | `memo` | TEXT | `content` | 프로젝트 메모 |
@@ -171,10 +179,10 @@ erDiagram
 
 | 컬럼 | 타입 | 제공 필드 대응 | 설명 |
 |---|---|---|---|
-| `project_id` | UUID FK | 신규 관계 | 소속 프로젝트 |
+| `project_id` | BIGINT FK | 신규 관계 | 소속 프로젝트 |
 | `type` | VARCHAR(50) | `type` | 예: `website`, `shop`, `api`, `server` |
 | `status` | VARCHAR(30) | 권장 신규 | 운영/중지/이관/폐기 상태 |
-| `primary_receiver_id` | UUID FK | `receiver_idx` | 주 담당 작업자 |
+| `primary_receiver_id` | BIGINT FK | `receiver_idx` | 주 담당 작업자 |
 | `inspection_memo` | TEXT | `content` | 검수 메모·비고 |
 
 ### 6. SiteEndpoints — 사이트 주소
@@ -211,7 +219,7 @@ hosting_[호스팅업체]
 
 | 컬럼 | 타입 | 설명 |
 |---|---|---|
-| `site_id` | UUID FK | 대상 사이트 |
+| `site_id` | BIGINT FK | 대상 사이트 |
 | `protocol` | VARCHAR(20) | `SSH`, `SFTP`, `FTP`, `CMS`, `DB` |
 | `auth_method` | VARCHAR(20) | `password`, `ssh_key`, `oauth`, `token` |
 | `login_id` | VARCHAR(255) | 접속 아이디 |

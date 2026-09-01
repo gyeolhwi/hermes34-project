@@ -2,7 +2,7 @@
 // 비밀값 원문(password/token/private key)은 저장하지 않는다.
 
 Table customers {
-  id uuid [pk]
+  id bigint [pk]
   name varchar(200) [not null]
   status varchar(30) [not null]
   memo text
@@ -11,8 +11,8 @@ Table customers {
 }
 
 Table customer_contacts {
-  id uuid [pk]
-  customer_id uuid [not null]
+  id bigint [pk]
+  customer_id bigint [not null]
   type varchar(30) [not null]
   name varchar(100)
   value varchar(320) [not null]
@@ -20,55 +20,55 @@ Table customer_contacts {
 }
 
 Table categories {
-  id uuid [pk]
-  parent_id uuid
+  id bigint [pk]
+  parent_id bigint
   name varchar(100) [not null]
   code varchar(50) [unique]
 }
 
 Table members {
-  id uuid [pk]
+  id bigint [pk]
   name varchar(100) [not null]
   status varchar(30) [not null]
 }
 
 Table projects {
-  id uuid [pk]
-  customer_id uuid [not null]
-  category_id uuid
+  id bigint [pk]
+  customer_id bigint [not null]
+  category_id bigint
   title varchar(250) [not null]
   status varchar(30) [not null]
   memo text
 }
 
 Table sites {
-  id uuid [pk]
-  project_id uuid [not null]
-  primary_receiver_id uuid
+  id bigint [pk]
+  project_id bigint [not null]
+  primary_receiver_id bigint
   type varchar(50) [not null]
   status varchar(30) [not null]
   inspection_memo text
 }
 
 Table providers {
-  id uuid [pk]
+  id bigint [pk]
   provider_type varchar(30) [not null]
   name varchar(200) [not null]
   website varchar(2048)
 }
 
 Table site_endpoints {
-  id uuid [pk]
-  site_id uuid [not null]
-  provider_id uuid
+  id bigint [pk]
+  site_id bigint [not null]
+  provider_id bigint
   endpoint_role varchar(30) [not null]
   url varchar(2048) [not null]
   is_primary boolean [not null, default: false]
 }
 
 Table site_access_accounts {
-  id uuid [pk]
-  site_id uuid [not null]
+  id bigint [pk]
+  site_id bigint [not null]
   protocol varchar(20) [not null]
   auth_method varchar(20) [not null]
   login_id varchar(255)
@@ -77,8 +77,8 @@ Table site_access_accounts {
 }
 
 Table site_notes {
-  id uuid [pk]
-  site_id uuid [not null]
+  id bigint [pk]
+  site_id bigint [not null]
   note_type varchar(30) [not null]
   content text [not null]
 }
