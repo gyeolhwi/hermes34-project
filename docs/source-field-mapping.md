@@ -1,73 +1,63 @@
-# 기존 데이터베이스 필드 매핑 및 이관 규칙
+# 이상적 정규화 구조 ↔ DoWeb 기존 모듈 매핑
 
-## 제공된 데이터베이스 식별자
+## 두 구조의 역할
 
-| 업무 영역 | 원본 데이터베이스 ID |
-|---|---|
-| 고객 정보 | `01a05700-8c1d-7cd4-8b2d-fac77f865a9f` |
-| 프로젝트 정보 | `01a05701-ed99-7cfa-841e-ec6f6c9922a0` |
-| 사이트 정보 | `01a05702-067e-729b-85ab-deb5b0836082` |
-
-> ID는 원본 데이터베이스 참조용입니다. API 토큰·접속 비밀값은 이 저장소에 저장하지 않습니다.
-
-## 고객 정보 매핑
-
-| 원본 필드 | 정규화 대상 | 변환 규칙 |
+| 구분 | 이상적 정규화 구조 | DoWeb 기존 모듈 구조 |
 |---|---|---|
-| 고객명/제목 필드 | `customers.name` | 공백 정리, 필수 확인 |
-| `content_raw.contact[]` | `customer_contacts` | 연락처 1개당 행 1개 생성 |
+| 목적 | 장기 운영 DB / 엄격한 검색·관계·감사 | 이미 생성된 모듈을 이용한 즉시 운영 |
+| 식별자 | 내부 `BIGINT IDENTITY` | DoWeb 컨텐츠 `idx` UUID |
+| 고객-프로젝트 | `projects.customer_id` | 프로젝트 `ref_idx = customer.idx` |
+| 프로젝트-카테고리 | `projects.category_id` | 프로젝트 `parent_idx = category.idx` |
+| 프로젝트-사이트 | `sites.project_id` | 사이트 `parent_idx = project.idx` |
+| 담당자 | `sites.primary_receiver_id` | 사이트 `receiver_idx = member.idx` |
+| 연락처 | `customer_contacts` 행 | 고객 `content_raw.contacts[]` JSON |
+| URL | `site_endpoints` 행 | 사이트 `url` 쉼표 분리 문자열 |
+| 도메인/호스팅사 | `providers` 관계 | 사이트 `tags`: `domain_*`, `hosting_*` |
+| 접속계정 | `site_access_accounts` + `secret_ref` | 사이트 `content_raw.accounts[]` + `secret_ref` |
 
-- 전화번호는 가능하면 E.164(`+82…`)로 정규화합니다.
-- 동일 고객·동일 type·동일 value는 중복 후보로 보고합니다.
-- 대표 연락처 기준이 없으면 자동 지정하지 않고 검수 목록으로 남깁니다.
+## 제공된 모듈 ID의 올바른 위치
 
-## 프로젝트 정보 매핑
-
-| 원본 필드 | 정규화 대상 | 변환 규칙 |
+| 업무 | 값 | DoWeb 요청에서의 위치 |
 |---|---|---|
-| `status` | `projects.status` | 상태 코드 표준화 필요 |
-| `title` | `projects.title` | 서비스명 |
-| `content` | `projects.memo` | 일반 메모만 보관 |
-| `parent_idx` | `projects.category_id` | 숫자 참조를 `categories.id` 관계로 치환 |
-| 고객 relation | `projects.customer_id` | 고객 연결이 없으면 검수 대상 |
+| 고객 | `01a05700-8c1d-7cd4-8b2d-fac77f865a9f` | `module_idx` |
+| 프로젝트 | `01a05701-ed99-7cfa-841e-ec6f6c9922a0` | `module_idx` |
+| 사이트 | `01a05702-067e-729b-85ab-deb5b0836082` | `module_idx` |
 
-## 사이트 정보 매핑
+이 값은 행의 `idx`나 관계용 FK가 아닙니다. 고객·프로젝트·사이트를 생성한 뒤 서버가 반환하는 각 컨텐츠의 `idx`가 관계 키가 됩니다.
 
-| 원본 필드 | 정규화 대상 | 변환 규칙 |
-|---|---|---|
-| `type` | `sites.type` | 표준 분류 값으로 대조 |
-| `url` | `site_endpoints.url` | 쉼표 분리 후 주소별 1행 |
-| `tags`의 `domain_*` | `providers` + endpoint 관계 | 도메인 등록업체 파싱 |
-| `tags`의 `hosting_*` | `providers` + endpoint 관계 | 호스팅사 파싱 |
-| `content` | `sites.inspection_memo` | 검수 메모·비고 |
-| `receiver_idx` | `sites.primary_receiver_id` | 선행 `members` 등록 필수 |
-| `content_raw.accounts[]` | `site_access_accounts` | 비밀값은 `secret_ref`로 교체 |
+## 필드별 매핑
 
-## 주소 역할 판별 규칙
+| 업무 | 사용자 요구 필드 | DoWeb 호환 저장 | 이상적 정규화 저장 |
+|---|---|---|---|
+| 고객 연락처 | `content_raw.contact` | `content_raw.contacts[]` JSON | `customer_contacts` |
+| 프로젝트 상태 | `status` | `status` | `projects.status` |
+| 서비스명 | `title` | `title` | `projects.title` |
+| 프로젝트 메모 | `content` | `content` | `projects.memo` |
+| 프로젝트 카테고리 | `parent_idx` | `parent_idx = category.idx` | `projects.category_id` |
+| 프로젝트 고객 | 신규 필요 | `ref_idx = customer.idx` | `projects.customer_id` |
+| 사이트 구분 | `type` | `type` | `sites.type` |
+| 주소 | `url` | 쉼표 구분 문자열 | `site_endpoints` |
+| 계정 | `content_raw.accounts` | JSON + `secret_ref` | `site_access_accounts` + `secret_ref` |
+| 도메인 업체 | `tags` | `domain_*` | `providers` |
+| 호스팅사 | `tags` | `hosting_*` | `providers` |
+| 검수 메모 | `content` | `content` | `sites.inspection_memo` |
+| 작업자 | `receiver_idx` | `receiver_idx = member.idx` | `sites.primary_receiver_id` |
 
-| URL 형태/의미 | `endpoint_role` |
-|---|---|
-| 고객에게 공개되는 도메인 | `public_domain` |
-| 서버/호스팅 접속 주소 | `hosting_endpoint` |
-| CMS 관리자 주소 | `admin_url` |
-| 개발·테스트 주소 | `staging` |
-| 역할 미판별 | `unknown` + 검수 대상 |
+## 데이터 입력 전 검수
 
-하나의 원본 `url`에 여러 값이 들어 있으면 쉼표 기준으로 먼저 분리하고, URL의 역할은 자동 추측이 아닌 검수 규칙 또는 명시된 데이터로 확정합니다.
+- 고객 `title` 중복 여부
+- `content_raw`가 유효 JSON인지
+- 프로젝트 `ref_idx`가 실제 고객 컨텐츠인지
+- 프로젝트 `parent_idx`가 실제 카테고리 컨텐츠인지
+- 사이트 `parent_idx`가 실제 프로젝트 컨텐츠인지
+- 사이트 `receiver_idx`가 실제 member인지
+- `url`의 쉼표 분리값이 유효 URL인지
+- `tags`가 공백 구분이며 `domain_`/`hosting_` 접두어를 따르는지
+- 계정 JSON에 실제 비밀번호·토큰·개인키가 없는지, `secret_ref`가 있는지
 
-## 접속 계정 이관 보안 규칙
+## 금지 사항
 
-1. 원본 `pw`는 로그·Git·Issue·Slack·일반 DB에 기록하지 않습니다.
-2. `id`도 운영상 불필요한 조회 화면에는 마스킹하며, 접근권한이 있는 서비스 계층에서만 사용합니다.
-3. 대상 계정마다 Secret Vault 또는 제한 레코드의 `secret_ref`를 발급/연결합니다.
-4. 이관 성공은 `secret_ref` 존재 여부와 읽기 전용 접속 검증 결과로만 기록합니다.
-5. 원본 필드에 비밀값이 이미 있다면, 이전 완료 후 원본 보관/파기 정책을 별도 승인합니다.
-
-## 이관 검수 산출물
-
-- 고객/프로젝트/사이트별 원본 수와 이관 수 비교표
-- 누락된 고객 관계, 작업자 관계, category 관계 목록
-- 쉼표 URL 분리 결과 및 중복/비정상 URL 목록
-- tag 파싱 불가 항목 목록
-- `secret_ref` 미연결 계정 목록(비밀값 제외)
-- 임의 표본의 읽기 전용 접속 검증 결과
+1. 제공된 `module_idx`를 `parent_idx`, `ref_idx`, `receiver_idx`에 넣지 않습니다.
+2. 실제 비밀번호를 `content_raw`, `content`, `tags`, Git, Slack, Issue에 저장하지 않습니다.
+3. 고객 관계를 `parent_idx`에 넣지 않습니다. 프로젝트의 `parent_idx`는 카테고리이므로 고객은 `ref_idx`를 사용합니다.
+4. 사이트가 어느 프로젝트에도 연결되지 않은 상태로 생성되지 않게 합니다.
