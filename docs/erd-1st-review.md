@@ -143,7 +143,7 @@ erDiagram
 
 ```json
 {
-  "contacts": [
+  "contact": [
     {
       "type": "phone",
       "name": "이름",

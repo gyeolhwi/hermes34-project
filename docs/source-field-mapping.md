@@ -10,7 +10,7 @@
 | 프로젝트-카테고리 | `projects.category_id` | 프로젝트 `parent_idx = category.idx` |
 | 프로젝트-사이트 | `sites.project_id` | 사이트 `parent_idx = project.idx` |
 | 담당자 | `sites.primary_receiver_id` | 사이트 `receiver_idx = member.idx` |
-| 연락처 | `customer_contacts` 행 | 고객 `content_raw.contacts[]` JSON |
+| 연락처 | `customer_contacts` 행 | 고객 `content_raw.contact[]` JSON |
 | URL | `site_endpoints` 행 | 사이트 `url` 쉼표 분리 문자열 |
 | 도메인/호스팅사 | `providers` 관계 | 사이트 `tags`: `domain_*`, `hosting_*` |
 | 접속계정 | `site_access_accounts` + `secret_ref` | 사이트 `content_raw.accounts[]` + `secret_ref` |
@@ -29,7 +29,7 @@
 
 | 업무 | 사용자 요구 필드 | DoWeb 호환 저장 | 이상적 정규화 저장 |
 |---|---|---|---|
-| 고객 연락처 | `content_raw.contact` | `content_raw.contacts[]` JSON | `customer_contacts` |
+| 고객 연락처 | `content_raw.contact[]` | `content_raw.contact[]` JSON | `customer_contacts` |
 | 프로젝트 상태 | `status` | `status` | `projects.status` |
 | 서비스명 | `title` | `title` | `projects.title` |
 | 프로젝트 메모 | `content` | `content` | `projects.memo` |

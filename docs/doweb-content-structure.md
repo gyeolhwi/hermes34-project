@@ -52,6 +52,8 @@ erDiagram
     }
 ```
 
+`parent_idx`, `ref_idx`, `receiver_idx`는 API가 제공하는 **문자열 참조 필드**이며, DoWeb이 고객·카테고리·프로젝트의 타입을 DB FK로 강제한다는 뜻은 아닙니다. 이 문서의 관계는 우리 운영 규칙입니다. 생성/수정 시 대상 `idx`의 모듈 타입을 API 조회로 검증해야 합니다.
+
 ## 1. 고객 컨텐츠
 
 ### 기본 필드
@@ -66,9 +68,11 @@ erDiagram
 
 ### `content_raw` 연락처 JSON
 
+고객 정보 모듈의 호환 키는 사용자가 정한 `contact`로 고정합니다. `content_raw`는 API에서 문자열로 받으므로, 아래 유효 JSON을 직렬화해 저장합니다.
+
 ```json
 {
-  "contacts": [
+  "contact": [
     {
       "type": "phone",
       "name": "이름",
@@ -78,7 +82,7 @@ erDiagram
 }
 ```
 
-- `contacts`는 배열이며, 연락처마다 객체 `{}` 1개입니다.
+- `contact`는 배열이며, 연락처마다 객체 `{}` 1개입니다.
 - `type`: 우선 `phone`, `email`, `kakao`, `other`만 사용합니다.
 - 휴대폰은 E.164 형식(`+82…`)으로 통일합니다.
 - `name`이 없으면 빈 문자열 대신 키 자체를 생략할 수 있습니다.
