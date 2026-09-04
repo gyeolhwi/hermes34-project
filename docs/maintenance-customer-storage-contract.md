@@ -50,10 +50,18 @@ DoWeb API의 `content_raw`는 **문자열** 필드입니다. 아래 JSON을 한 
 4. 활성 연락처만 규정 JSON으로 직렬화해 DoWeb 고객 컨텐츠의 `content_raw`를 생성/수정합니다. API에는 고객 모듈 ID를 `module_idx`로, 고객 컨텐츠 ID를 수정 대상 `idx`로 사용합니다.
 5. DoWeb API 성공 후 `source_content_idx`와 동기화 시각을 운영 로그에 남깁니다. 실패 시 DB의 연락처는 유지하고, API 재시도 대상만 별도로 처리합니다. 실패를 성공으로 표시하지 않습니다.
 
+## 프로젝트·사이트 분류 계약
+
+- 프로젝트 카테고리는 `content_raw`나 `CATEGORY_CONTENT`가 아니라 프로젝트 `tags`에 `category_maintenance`처럼 저장합니다.
+- 사이트의 운영 환경은 사이트 `type`에 `production`, `development`, `staging`, `other`로 저장합니다.
+- 도메인·호스팅·프레임워크·서버 역할처럼 검색할 정보는 사이트 `tags`에 `domain_*`, `hosting_*`, `frame_*`, `server_*` 형식으로 저장합니다.
+- `tags`는 JSON이 아니라 공백 구분 문자열입니다. 예: `hosting_iwinv frame_xe server_web`.
+- `content_raw`는 검색하지 않는 구조화 보조정보 및 `secret_ref` 같은 제한 저장소 참조에만 사용합니다.
+
 ## 비밀정보 경계
 
 연락처는 업무상 필요한 개인정보이므로 권한 있는 유지보수 운영자만 조회합니다. 비밀번호, 토큰, 개인키는 `content_raw`, `content`, DB 일반 컬럼, Git, Slack, Issue에 저장하지 않습니다. 사이트 접속계정은 `site_access_accounts.secret_ref`로 제한 저장소의 비밀값만 참조합니다.
 
 ## 테이블 구현
 
-PostgreSQL용 실제 DDL은 [`sql/001_customer_maintenance_schema.sql`](../sql/001_customer_maintenance_schema.sql)에 있습니다. 이 스키마는 고객 → 프로젝트 → 사이트와 연락처·주소·접속계정의 다중값 관계 및 제약조건을 포함합니다.
+신규 DB의 실제 DDL은 [`sql/001_customer_maintenance_schema.sql`](../sql/001_customer_maintenance_schema.sql)에 있습니다. 이미 이전 001을 적용한 DB에는 [`sql/002_replace_project_categories_with_tags.sql`](../sql/002_replace_project_categories_with_tags.sql)을 이어서 적용합니다.

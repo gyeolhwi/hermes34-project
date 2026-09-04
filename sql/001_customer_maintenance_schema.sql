@@ -41,13 +41,6 @@ CREATE INDEX customer_contacts_phone_lookup
   ON customer_contacts (contact_value)
   WHERE contact_type = 'phone' AND is_active;
 
-CREATE TABLE categories (
-  id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  parent_id BIGINT REFERENCES categories(id) ON DELETE RESTRICT,
-  name VARCHAR(100) NOT NULL,
-  code VARCHAR(50) UNIQUE
-);
-
 CREATE TABLE members (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   source_member_idx UUID UNIQUE,
@@ -60,28 +53,32 @@ CREATE TABLE projects (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   source_content_idx UUID UNIQUE,
   customer_id BIGINT NOT NULL REFERENCES customers(id) ON DELETE RESTRICT,
-  category_id BIGINT REFERENCES categories(id) ON DELETE SET NULL,
   title VARCHAR(250) NOT NULL,
   status VARCHAR(30) NOT NULL DEFAULT 'active',
+  tags TEXT NOT NULL DEFAULT '',
   memo TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX projects_customer_id ON projects (customer_id);
+CREATE INDEX projects_tags_lookup ON projects USING GIN (string_to_array(tags, ' '));
 
 CREATE TABLE sites (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   source_content_idx UUID UNIQUE,
   project_id BIGINT NOT NULL REFERENCES projects(id) ON DELETE RESTRICT,
   primary_receiver_id BIGINT REFERENCES members(id) ON DELETE SET NULL,
-  site_type VARCHAR(50) NOT NULL,
+  site_type VARCHAR(30) NOT NULL
+    CHECK (site_type IN ('production', 'development', 'staging', 'other')),
   status VARCHAR(30) NOT NULL DEFAULT 'active',
+  tags TEXT NOT NULL DEFAULT '',
   inspection_memo TEXT,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX sites_project_id ON sites (project_id);
 CREATE INDEX sites_receiver_id ON sites (primary_receiver_id);
+CREATE INDEX sites_tags_lookup ON sites USING GIN (string_to_array(tags, ' '));
 
 CREATE TABLE providers (
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

@@ -1,63 +1,49 @@
-# 이상적 정규화 구조 ↔ DoWeb 기존 모듈 매핑
+# 정규화 구조 ↔ DoWeb 운영 모듈 매핑
 
-## 두 구조의 역할
+## 역할과 관계
 
-| 구분 | 이상적 정규화 구조 | DoWeb 기존 모듈 구조 |
+| 구분 | 정규화 DB | DoWeb 운영 모듈 |
 |---|---|---|
-| 목적 | 장기 운영 DB / 엄격한 검색·관계·감사 | 이미 생성된 모듈을 이용한 즉시 운영 |
-| 식별자 | 내부 `BIGINT IDENTITY` | DoWeb 컨텐츠 `idx` UUID |
-| 고객-프로젝트 | `projects.customer_id` | 프로젝트 `ref_idx = customer.idx` |
-| 프로젝트-카테고리 | `projects.category_id` | 프로젝트 `parent_idx = category.idx` |
-| 프로젝트-사이트 | `sites.project_id` | 사이트 `parent_idx = project.idx` |
-| 담당자 | `sites.primary_receiver_id` | 사이트 `receiver_idx = member.idx` |
-| 연락처 | `customer_contacts` 행 | 고객 `content_raw.contact[]` JSON |
-| URL | `site_endpoints` 행 | 사이트 `url` 쉼표 분리 문자열 |
-| 도메인/호스팅사 | `providers` 관계 | 사이트 `tags`: `domain_*`, `hosting_*` |
+| 식별자 | 내부 `BIGINT IDENTITY` | 컨텐츠 `idx` UUID |
+| 고객-프로젝트 | `projects.customer_id` | `projects.ref_idx = customer.idx` |
+| 프로젝트-사이트 | `sites.project_id` | `sites.parent_idx = project.idx` |
+| 사이트 담당자 | `sites.primary_receiver_id` | `sites.receiver_idx = member.idx` |
+| 고객 연락처 | `customer_contacts` 행 | 고객 `content_raw.contact[]` JSON |
+| 프로젝트 분류 | `projects.tags` | 프로젝트 `tags`의 `category_*` |
+| 사이트 환경 | `sites.site_type` | 사이트 `type`: `production`/`development`/`staging`/`other` |
+| 사이트 기술·호스팅 | `sites.tags` | 사이트 `tags`: `hosting_*`, `domain_*`, `frame_*`, `server_*` |
+| URL | `site_endpoints` 행 | 사이트 `url` 쉼표 구분 문자열 |
 | 접속계정 | `site_access_accounts` + `secret_ref` | 사이트 `content_raw.accounts[]` + `secret_ref` |
 
-## 제공된 모듈 ID의 올바른 위치
+`CATEGORY_CONTENT`, `categories`, 프로젝트 `parent_idx` 카테고리 관계는 사용하지 않습니다. 기존 문서의 예시용 구조였으며, 현재 정한 운영 규격에서 프로젝트 카테고리는 검색 가능한 `tags`입니다.
 
-| 업무 | 값 | DoWeb 요청에서의 위치 |
+## 모듈 ID의 위치
+
+| 업무 | 값 | API 요청 위치 |
 |---|---|---|
 | 고객 | `01a05700-8c1d-7cd4-8b2d-fac77f865a9f` | `module_idx` |
 | 프로젝트 | `01a05701-ed99-7cfa-841e-ec6f6c9922a0` | `module_idx` |
 | 사이트 | `01a05702-067e-729b-85ab-deb5b0836082` | `module_idx` |
 
-이 값은 행의 `idx`나 관계용 FK가 아닙니다. 고객·프로젝트·사이트를 생성한 뒤 서버가 반환하는 각 컨텐츠의 `idx`가 관계 키가 됩니다.
+이 값은 관계 키가 아닙니다. 관계에는 API가 반환한 컨텐츠 `idx`를 씁니다.
 
-## 필드별 매핑
+## `tags`와 `content_raw` 구분
 
-| 업무 | 사용자 요구 필드 | DoWeb 호환 저장 | 이상적 정규화 저장 |
-|---|---|---|---|
-| 고객 연락처 | `content_raw.contact[]` | `content_raw.contact[]` JSON | `customer_contacts` |
-| 프로젝트 상태 | `status` | `status` | `projects.status` |
-| 서비스명 | `title` | `title` | `projects.title` |
-| 프로젝트 메모 | `content` | `content` | `projects.memo` |
-| 프로젝트 카테고리 | `parent_idx` | `parent_idx = category.idx` | `projects.category_id` |
-| 프로젝트 고객 | 신규 필요 | `ref_idx = customer.idx` | `projects.customer_id` |
-| 사이트 구분 | `type` | `type` | `sites.type` |
-| 주소 | `url` | 쉼표 구분 문자열 | `site_endpoints` |
-| 계정 | `content_raw.accounts` | JSON + `secret_ref` | `site_access_accounts` + `secret_ref` |
-| 도메인 업체 | `tags` | `domain_*` | `providers` |
-| 호스팅사 | `tags` | `hosting_*` | `providers` |
-| 검수 메모 | `content` | `content` | `sites.inspection_memo` |
-| 작업자 | `receiver_idx` | `receiver_idx = member.idx` | `sites.primary_receiver_id` |
+| 정보 성격 | 저장 위치 | 예 |
+|---|---|---|
+| 검색·필터·조합 검색할 분류 | `tags` | `category_maintenance`, `hosting_iwinv`, `frame_xe` |
+| 프로젝트 분류 | 프로젝트 `tags` | `category_maintenance` |
+| 사이트 운영 환경 | 사이트 `type` | `production`, `development` |
+| 연락처·계정 참조 등 구조화된 비검색 보조정보 | `content_raw` JSON | `contact[]`, `accounts[].secret_ref` |
+| 실제 비밀번호·토큰·개인키 | 제한 저장소만 | DB/API/Git/Slack 저장 금지 |
 
-## 데이터 입력 전 검수
+`tags`는 JSON이 아닙니다. 공백으로 구분한 문자열이며 태그 하나는 공백 없는 `접두어_값` 형식입니다.
 
-- 고객 `title` 중복 여부
-- `content_raw`가 유효 JSON인지
+## 입력 전 검수
+
+- 고객 `content_raw`가 유효 JSON인지
 - 프로젝트 `ref_idx`가 실제 고객 컨텐츠인지
-- 프로젝트 `parent_idx`가 실제 카테고리 컨텐츠인지
 - 사이트 `parent_idx`가 실제 프로젝트 컨텐츠인지
-- 사이트 `receiver_idx`가 실제 member인지
-- `url`의 쉼표 분리값이 유효 URL인지
-- `tags`가 공백 구분이며 `domain_`/`hosting_` 접두어를 따르는지
-- 계정 JSON에 실제 비밀번호·토큰·개인키가 없는지, `secret_ref`가 있는지
-
-## 금지 사항
-
-1. 제공된 `module_idx`를 `parent_idx`, `ref_idx`, `receiver_idx`에 넣지 않습니다.
-2. 실제 비밀번호를 `content_raw`, `content`, `tags`, Git, Slack, Issue에 저장하지 않습니다.
-3. 고객 관계를 `parent_idx`에 넣지 않습니다. 프로젝트의 `parent_idx`는 카테고리이므로 고객은 `ref_idx`를 사용합니다.
-4. 사이트가 어느 프로젝트에도 연결되지 않은 상태로 생성되지 않게 합니다.
+- 태그가 중복·공백·비정의 접두어 없이 입력됐는지
+- 사이트 `type`이 운영 환경 코드인지
+- `content_raw.accounts[]`에 실제 비밀값이 없고 `secret_ref`만 있는지

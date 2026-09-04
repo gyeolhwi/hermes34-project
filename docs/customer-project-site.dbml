@@ -1,8 +1,10 @@
-// 고객·프로젝트·사이트 1차 검수용 DBML
-// 비밀값 원문(password/token/private key)은 저장하지 않는다.
+// 고객·프로젝트·사이트 정규화 구조
+// DoWeb content_raw 호환 JSON은 이 구조에서 직렬화한다.
+// password/token/private key 원문은 저장하지 않는다.
 
 Table customers {
   id bigint [pk]
+  source_content_idx uuid [unique]
   name varchar(200) [not null]
   status varchar(30) [not null]
   memo text
@@ -13,40 +15,39 @@ Table customers {
 Table customer_contacts {
   id bigint [pk]
   customer_id bigint [not null]
-  type varchar(30) [not null]
-  name varchar(100)
-  value varchar(320) [not null]
+  contact_type varchar(30) [not null]
+  contact_name varchar(100)
+  contact_value varchar(320) [not null]
   is_primary boolean [not null, default: false]
-}
-
-Table categories {
-  id bigint [pk]
-  parent_id bigint
-  name varchar(100) [not null]
-  code varchar(50) [unique]
+  is_active boolean [not null, default: true]
+  sort_order smallint [not null, default: 0]
 }
 
 Table members {
   id bigint [pk]
+  source_member_idx uuid [unique]
   name varchar(100) [not null]
   status varchar(30) [not null]
 }
 
 Table projects {
   id bigint [pk]
+  source_content_idx uuid [unique]
   customer_id bigint [not null]
-  category_id bigint
   title varchar(250) [not null]
   status varchar(30) [not null]
+  tags text [not null, note: '공백 구분; category_* 등 검색용 태그']
   memo text
 }
 
 Table sites {
   id bigint [pk]
+  source_content_idx uuid [unique]
   project_id bigint [not null]
   primary_receiver_id bigint
-  type varchar(50) [not null]
+  site_type varchar(30) [not null, note: 'production/development/staging/other']
   status varchar(30) [not null]
+  tags text [not null, note: 'hosting_*, domain_*, frame_*, server_*']
   inspection_memo text
 }
 
@@ -84,9 +85,7 @@ Table site_notes {
 }
 
 Ref: customer_contacts.customer_id > customers.id
-Ref: categories.parent_id > categories.id
 Ref: projects.customer_id > customers.id
-Ref: projects.category_id > categories.id
 Ref: sites.project_id > projects.id
 Ref: sites.primary_receiver_id > members.id
 Ref: site_endpoints.site_id > sites.id

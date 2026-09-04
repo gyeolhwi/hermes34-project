@@ -16,6 +16,7 @@
    - `content_raw.contact[]` JSON과 정규화 연락처 테이블의 동기화 기준
 5. [참조용 DBML](docs/customer-project-site.dbml)
 6. [PostgreSQL 생성 DDL](sql/001_customer_maintenance_schema.sql)
+   - 기존 001 적용 DB의 카테고리→태그 전환: `sql/002_replace_project_categories_with_tags.sql`
 
 ## 원칙
 
