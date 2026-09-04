@@ -12,7 +12,10 @@
    - `contents` API의 `title`, `content`, `content_raw`, `url`, `tags`, `parent_idx`, `ref_idx`, `receiver_idx`로 저장
 3. [필드 매핑 및 이관 규칙](docs/source-field-mapping.md)
    - 두 구조 간 대응표와 데이터 품질 검수 기준
-4. [참조용 DBML](docs/customer-project-site.dbml)
+4. [유지보수 고객 저장 계약](docs/maintenance-customer-storage-contract.md)
+   - `content_raw.contact[]` JSON과 정규화 연락처 테이블의 동기화 기준
+5. [참조용 DBML](docs/customer-project-site.dbml)
+6. [PostgreSQL 생성 DDL](sql/001_customer_maintenance_schema.sql)
 
 ## 원칙
 
