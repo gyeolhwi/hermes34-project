@@ -173,6 +173,106 @@ domain_gabia hosting_iwinv frame_xe
 | V 작업자 | member 대조 후 사이트 `receiver_idx` |
 | W 개설일 | 프로젝트·사이트 `content_raw.opened_at` |
 
+## 예시: 엑셀 한 행이 `wr_contents_t`에 저장되는 모습
+
+아래는 **설명용 가상 값**입니다. 실제 고객 연락처·접속정보·비밀번호는 포함하지 않습니다.
+
+### 1) 원본 엑셀의 한 행
+
+| 원본 열 | 예시값 |
+|---|---|
+| A 서비스ID | `SVC-201` |
+| B 운영상태 | `운영` |
+| C 서비스명 | `샘플교회 홈페이지` |
+| D 카테고리 | `교회` |
+| E 서비스구분 | `실제` |
+| F 도메인주소 | `samplechurch.example.kr` |
+| G 호스팅주소 | `samplechurch.iwinv.net` |
+| O 고객연락처 | `김담당: 010-0000-0000` |
+| P 고객이메일 | `manager@samplechurch.example.kr` |
+| Q 도메인등록업체 | `가비아` |
+| R 호스팅사 | `iwinv` |
+| S 프레임워크 | `XE` |
+| T 검수메모 | `메인 페이지 점검 완료` |
+| U 비고 | `관리자 URL은 별도 확인 필요` |
+| V 작업자 | `홍작업자` |
+| W 개설일 | `2024-05-20` |
+
+H~N의 접속·DB 정보는 이 예시와 API payload에서 의도적으로 제외합니다.
+
+### 2) 고객 컨텐츠 행 — 고객명이 확정된 경우만
+
+고객명 매핑으로 `샘플교회`가 확정됐다고 가정합니다. 고객 생성 API 응답의 `idx`는 이후 프로젝트 연결에 사용합니다.
+
+```json
+{
+  "module_idx": "01a05700-8c1d-7cd4-8b2d-fac77f865a9f",
+  "title": "샘플교회",
+  "content_raw": "{\"contact\":[{\"type\":\"phone\",\"name\":\"김담당\",\"contact\":\"+821000000000\"},{\"type\":\"email\",\"name\":\"김담당\",\"contact\":\"manager@samplechurch.example.kr\"}]}",
+  "content": ""
+}
+```
+
+```text
+API 생성 응답: customer.idx = "customer-uuid-001"
+```
+
+### 3) 프로젝트 컨텐츠 행
+
+프로젝트는 서비스명(C)을 `title`로 쓰고, 고객이 확정됐으므로 `ref_idx`에 방금 받은 고객 `idx`를 넣습니다. B `운영`은 API 상태 코드가 아직 확정되지 않았으므로 `status`에 추측값을 넣지 않고 원본 그대로 `content_raw`에 보존합니다.
+
+```json
+{
+  "module_idx": "01a05701-ed99-7cfa-841e-ec6f6c9922a0",
+  "title": "샘플교회 홈페이지",
+  "ref_idx": "customer-uuid-001",
+  "tags": "category_church",
+  "content": "",
+  "content_raw": "{\"source_service_id\":\"SVC-201\",\"source_operation_status\":\"운영\",\"opened_at\":\"2024-05-20\"}"
+}
+```
+
+```text
+API 생성 응답: project.idx = "project-uuid-001"
+```
+
+### 4) 사이트 컨텐츠 행
+
+사이트는 프로젝트 `idx`를 `parent_idx`로 연결합니다. E `실제`도 API `type` 코드가 확정되기 전까지는 `content_raw`에 원본값으로 남기고, `type`에는 임의 문자열을 넣지 않습니다.
+
+```json
+{
+  "module_idx": "01a05702-067e-729b-85ab-deb5b0836082",
+  "parent_idx": "project-uuid-001",
+  "url": "https://samplechurch.example.kr,https://samplechurch.iwinv.net",
+  "tags": "domain_gabia hosting_iwinv frame_xe",
+  "receiver_idx": "member-uuid-001",
+  "content": "[검수메모] 메인 페이지 점검 완료\n\n[비고] 관리자 URL은 별도 확인 필요",
+  "content_raw": "{\"source_service_id\":\"SVC-201\",\"source_operation_status\":\"운영\",\"source_service_kind\":\"실제\",\"opened_at\":\"2024-05-20\"}"
+}
+```
+
+`member-uuid-001`은 V 작업자 `홍작업자`가 실제 member 목록에서 확인된 경우에만 넣습니다. 확인되지 않으면 `receiver_idx`는 넣지 않습니다.
+
+### 5) 최종적으로 보이는 `wr_contents_t` 행 관계
+
+```text
+[고객 모듈 행]
+idx       = customer-uuid-001
+title     = 샘플교회
+
+[프로젝트 모듈 행]
+idx       = project-uuid-001
+ref_idx   = customer-uuid-001
+title     = 샘플교회 홈페이지
+tags      = category_church
+
+[사이트 모듈 행]
+parent_idx = project-uuid-001
+url        = https://samplechurch.example.kr,https://samplechurch.iwinv.net
+tags       = domain_gabia hosting_iwinv frame_xe
+```
+
 ## 적재 순서와 검수 기준
 
 1. 서비스ID 중복·서비스명·도메인 중복을 먼저 검수합니다.
