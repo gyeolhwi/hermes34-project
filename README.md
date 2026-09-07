@@ -1,24 +1,31 @@
-# Hermes34 고객시트 → 우리기획(DoWeb) 공용 API 적재 규격
+# Hermes34 → 우리기획 공용 API 적재 구조
 
-Hermes34 고객시트 데이터는 고객·프로젝트·사이트별 신규 테이블로 정규화하지 않습니다. 공용 API의 컨텐츠 생성·수정 요청으로 적재하며, 결과는 DoWeb 공용 컨텐츠 테이블 **`wr_contents_t`**에 행 단위로 저장됩니다.
+## 핵심
+
+Hermes34는 물리적으로는 **`wr_content_t` 한 테이블**만 사용합니다.
+
+고객·프로젝트·사이트는 별도 물리 테이블이 아니라, 같은 `wr_content_t` 행을 `module_idx`로 구분하는 **3개 모듈**입니다.
+
+```text
+wr_content_t
+ ├─ 고객 모듈 행
+ ├─ 프로젝트 모듈 행
+ └─ 사이트 모듈 행
+```
+
+원본 서비스 시트의 데이터는 세 모듈 행에 나누어 적재하되, 원본값 전체는 각 행의 `content_raw` JSON에 최대한 보존합니다.
 
 ## 문서
 
-1. [서비스 시트 → 공용 API 필드 매핑](docs/service-sheet-api-field-mapping.md)
-   - 사용자가 제공한 엑셀 파일·시트·23개 원본 필드 목록
-   - 원본 열 → 공용 API payload 필드별 매핑 및 적재 보류 항목
-2. [`wr_contents_t` 저장 구조](docs/wr-contents-storage-structure.md)
-   - 제공 엑셀 1행을 고객·프로젝트·사이트 컨텐츠 행으로 적재하는 권장 구조
-   - `content_raw`, `tags`, `url`, 관계 필드와 적재 보류 기준
-3. [DoWeb `wr_contents_t` 적재 규격](docs/doweb-content-structure.md)
-   - 고객·프로젝트·사이트 행의 `module_idx`, `idx`, `ref_idx`, `parent_idx` 사용 기준
-   - `content_raw`, `tags`, `type`의 저장 위치와 형식
+1. [3모듈 ERD와 필드 구조](docs/wr-content-erd.md)
+2. [서비스 시트 → 3모듈 매핑](docs/service-sheet-api-field-mapping.md)
+3. [공용 API 적재 규격](docs/doweb-content-structure.md)
 
-## 핵심 규칙
+## 공통 원칙
 
-- 고객·프로젝트·사이트는 물리 테이블이 아니라 `module_idx`로 구분하는 컨텐츠 종류입니다.
-- 고객 1건, 프로젝트 1건, 사이트 1건은 각각 `wr_contents_t`의 컨텐츠 행 1건입니다.
-- 프로젝트는 `ref_idx = customer.idx`, 사이트는 `parent_idx = project.idx`로 연결합니다.
-- 프로젝트 분류는 프로젝트 `tags`, 사이트 환경은 사이트 `type`, 호스팅·프레임워크 등의 검색 정보는 사이트 `tags`에 저장합니다.
-- 연락처처럼 검색하지 않는 구조화 정보는 `content_raw` JSON 문자열로 저장합니다.
-- 실제 비밀번호·토큰·개인키는 `wr_contents_t`, Git, Slack에 저장하지 않고 제한 저장소로 관리합니다.
+- 고객·프로젝트·사이트는 모두 `wr_content_t`의 행입니다.
+- 고객 → 프로젝트는 `project.ref_idx = customer.idx`로 연결합니다.
+- 프로젝트 → 사이트는 `site.parent_idx = project.idx`로 연결합니다.
+- `content_raw`는 JSON 문자열로 저장하며, 원본 시트 데이터와 다중값·접속정보를 구조화해 담습니다.
+- `tags`는 검색용 짧은 분류만 저장합니다.
+- `content`는 사람이 읽는 검수메모·비고만 저장합니다.
