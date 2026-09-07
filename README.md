@@ -1,25 +1,18 @@
-# Hermes34 고객·프로젝트·사이트 데이터 모델
+# Hermes34 고객시트 → 우리기획(DoWeb) 공용 API 적재 규격
 
-이미 생성된 DoWeb 컨텐츠 모듈을 즉시 운영하는 구조와, 장기적으로 정규화 DB로 전환하는 구조를 **분리**해 검수하는 문서입니다.
+Hermes34 고객시트 데이터는 고객·프로젝트·사이트별 신규 테이블로 정규화하지 않습니다. 공용 API의 컨텐츠 생성·수정 요청으로 적재하며, 결과는 DoWeb 공용 컨텐츠 테이블 **`wr_content_t`**에 행 단위로 저장됩니다.
 
 ## 문서
 
-1. [이상적인 정규화 구조 — ERD·DBML](docs/erd-1st-review.md)
-   - 신규 운영 DB 또는 향후 이관 기준
-   - 내부 식별자는 `BIGINT IDENTITY`
-2. [우리기획(DoWeb) 규격 구조 — 기존 모듈 운영](docs/doweb-content-structure.md)
-   - 제공된 `module_idx` 3개를 그대로 사용
-   - `contents` API의 `title`, `content`, `content_raw`, `url`, `tags`, `parent_idx`, `ref_idx`, `receiver_idx`로 저장
-3. [필드 매핑 및 이관 규칙](docs/source-field-mapping.md)
-   - 두 구조 간 대응표와 데이터 품질 검수 기준
-4. [유지보수 고객 저장 계약](docs/maintenance-customer-storage-contract.md)
-   - `content_raw.contact[]` JSON과 정규화 연락처 테이블의 동기화 기준
-5. [참조용 DBML](docs/customer-project-site.dbml)
-6. [PostgreSQL 생성 DDL](sql/001_customer_maintenance_schema.sql)
-   - 기존 001 적용 DB의 카테고리→태그 전환: `sql/002_replace_project_categories_with_tags.sql`
+1. [DoWeb `wr_content_t` 적재 규격](docs/doweb-content-structure.md)
+   - 고객·프로젝트·사이트 행의 `module_idx`, `idx`, `ref_idx`, `parent_idx` 사용 기준
+   - `content_raw`, `tags`, `type`의 저장 위치와 형식
 
-## 원칙
+## 핵심 규칙
 
-- **지금**: DoWeb 규격을 따르되, 관계·JSON·태그 규칙을 고정해 데이터가 더 흐트러지지 않게 합니다.
-- **향후**: 주소·연락처·계정·공급자처럼 다중값인 필드는 정규화 DB로 분리합니다.
-- 비밀번호·토큰·개인키는 Git·문서·Slack·일반 `content_raw`에 기록하지 않습니다. DoWeb `content_raw`에 `pw` 키가 필요한 기존 호환 요구가 있더라도, 실제 값은 제한 저장소의 `secret_ref`로 대체합니다.
+- 고객·프로젝트·사이트는 물리 테이블이 아니라 `module_idx`로 구분하는 컨텐츠 종류입니다.
+- 고객 1건, 프로젝트 1건, 사이트 1건은 각각 `wr_content_t`의 컨텐츠 행 1건입니다.
+- 프로젝트는 `ref_idx = customer.idx`, 사이트는 `parent_idx = project.idx`로 연결합니다.
+- 프로젝트 분류는 프로젝트 `tags`, 사이트 환경은 사이트 `type`, 호스팅·프레임워크 등의 검색 정보는 사이트 `tags`에 저장합니다.
+- 연락처처럼 검색하지 않는 구조화 정보는 `content_raw` JSON 문자열로 저장합니다.
+- 실제 비밀번호·토큰·개인키는 `wr_content_t`, Git, Slack에 저장하지 않고 제한 저장소로 관리합니다.
