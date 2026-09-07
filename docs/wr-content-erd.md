@@ -14,7 +14,7 @@ erDiagram
       string idx PK "wr_content_t.idx"
       string module_idx "고객 모듈"
       string title "고객명"
-      string content_raw "고객 JSON"
+      string content_raw "customer{name_source,service_ids}; contact[]"
       string content "고객 메모"
     }
     PROJECT_MODULE {
@@ -23,7 +23,7 @@ erDiagram
       string ref_idx FK "고객 idx"
       string title "서비스명"
       string tags "카테고리 검색 태그"
-      string content_raw "원본 프로젝트 JSON"
+      string content_raw "source{service_id,name,status,category,opened_at}"
       string content "프로젝트 메모"
     }
     SITE_MODULE {
@@ -33,10 +33,25 @@ erDiagram
       string receiver_idx FK "member idx"
       string url "도메인/호스팅 주소"
       string tags "검색 태그"
-      string content_raw "원본 전체 JSON"
+      string content_raw "source{A-G,O-W}; access{H-N}"
       string content "검수메모/비고"
     }
 ```
+
+## ERD에서 보는 `content_raw` 구성
+
+아래 상자는 별도 테이블이 아니라 각 모듈 행의 `content_raw` JSON 내부 키를 보여줍니다.
+
+```mermaid
+flowchart TB
+    C["고객 모듈 행<br/>wr_content_t"] -. "content_raw" .-> CR["customer<br/>- name_source<br/>- service_ids[]<br/><br/>contact[]<br/>- type<br/>- name<br/>- contact"]
+    P["프로젝트 모듈 행<br/>wr_content_t"] -. "content_raw" .-> PR["source<br/>- service_id<br/>- service_name<br/>- operation_status<br/>- category<br/>- opened_at"]
+    S["사이트 모듈 행<br/>wr_content_t"] -. "content_raw" .-> SR["source<br/>- service_id, operation_status<br/>- service_name, category, service_kind<br/>- domain_url, hosting_url<br/>- customer_contact, customer_email<br/>- domain_registrar, hosting_provider, framework<br/>- inspection_memo, note, operator, opened_at<br/><br/>access<br/>- hosting: id, password<br/>- admin: id, password<br/>- database: url, id, password"]
+```
+
+- 고객 `content_raw`: 고객명 근거와 여러 담당자 연락처
+- 프로젝트 `content_raw`: 서비스의 기본 식별·분류 이력
+- 사이트 `content_raw`: 원본 엑셀 A~W 전체를 `source`와 `access`로 보존
 
 ## `wr_content_t` 공통 필드 사용
 
