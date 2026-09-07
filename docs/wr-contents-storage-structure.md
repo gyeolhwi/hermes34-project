@@ -162,7 +162,7 @@ domain_gabia hosting_iwinv frame_xe
 | E 서비스구분 | 원본값은 사이트 `content_raw.source_service_kind`; `type`은 API 코드표 확정 후 |
 | F 도메인주소 | 사이트 `url` |
 | G 호스팅주소 | 사이트 `url` |
-| H~N 접속·DB 정보 | 제한 저장소로 분리; `wr_contents_t`에는 실제 값 미저장 |
+| H~N 접속·DB 정보 | 이번 이관에서 제외; `wr_contents_t`에 저장하지 않음 |
 | O 고객연락처 | 고객 `content_raw.contact[]` (고객 확정 후) |
 | P 고객이메일 | 고객 `content_raw.contact[]` (고객 확정 후) |
 | Q 도메인등록업체 | 사이트 `tags`의 `domain_*` |
@@ -254,23 +254,21 @@ API 생성 응답: project.idx = "project-uuid-001"
 
 `member-uuid-001`은 V 작업자 `홍작업자`가 실제 member 목록에서 확인된 경우에만 넣습니다. 확인되지 않으면 `receiver_idx`는 넣지 않습니다.
 
-### 5) 최종적으로 보이는 `wr_contents_t` 행 관계
+### 5) 실제 저장 뒤 `wr_contents_t`에 보이는 행 목록
+
+아래 표는 위 API 요청이 성공해 반환된 `idx`까지 반영된 **저장 결과 예시**입니다. `content_raw`는 DB에서는 JSON 객체가 아니라 JSON을 직렬화한 문자열입니다.
+
+| `idx` | `module_idx` 역할 | `title` | `ref_idx` | `parent_idx` | `url` | `tags` | `receiver_idx` | `content_raw` 핵심값 |
+|---|---|---|---|---|---|---|---|---|
+| `customer-uuid-001` | 고객 | 샘플교회 | — | — | — | — | — | `contact[]` |
+| `project-uuid-001` | 프로젝트 | 샘플교회 홈페이지 | `customer-uuid-001` | — | — | `category_church` | — | `source_service_id=SVC-201`, `source_operation_status=운영`, `opened_at=2024-05-20` |
+| `site-uuid-001` | 사이트 | — | — | `project-uuid-001` | `https://samplechurch.example.kr,https://samplechurch.iwinv.net` | `domain_gabia hosting_iwinv frame_xe` | `member-uuid-001` | `source_service_id=SVC-201`, `source_service_kind=실제`, `opened_at=2024-05-20` |
+
+그래서 목록에서 고객 행을 열면 연락처가 보이고, 프로젝트 행을 열면 고객 행의 `idx`가 `ref_idx`에 보이며, 사이트 행을 열면 프로젝트 행의 `idx`가 `parent_idx`에 보입니다.
 
 ```text
-[고객 모듈 행]
-idx       = customer-uuid-001
-title     = 샘플교회
-
-[프로젝트 모듈 행]
-idx       = project-uuid-001
-ref_idx   = customer-uuid-001
-title     = 샘플교회 홈페이지
-tags      = category_church
-
-[사이트 모듈 행]
-parent_idx = project-uuid-001
-url        = https://samplechurch.example.kr,https://samplechurch.iwinv.net
-tags       = domain_gabia hosting_iwinv frame_xe
+customer-uuid-001  ← project.ref_idx
+project-uuid-001   ← site.parent_idx
 ```
 
 ## 적재 순서와 검수 기준
