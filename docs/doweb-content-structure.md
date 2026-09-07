@@ -115,7 +115,7 @@ category_maintenance category_cms
 | `type` | 공용 API 사이트 유형 코드. 원본 `서비스구분`은 코드표 확인 뒤 변환 |
 | `url` | 공개 URL, 호스팅/서버 URL, 관리자 URL을 쉼표로 구분 |
 | `tags` | 호스팅·도메인·프레임워크·서버 역할 등 검색용 정보 |
-| `content_raw` | 검색하지 않는 구조화 보조정보. 접속·DB 정보는 이번 이관에서 제외 |
+| `content_raw` | 검색하지 않는 구조화 보조정보와 접속·DB 정보의 `access` 객체 |
 | `content` | 검수 메모·운영 비고 |
 | `receiver_idx` | 담당 member의 `idx` |
 
@@ -142,7 +142,7 @@ hosting_iwinv domain_iwinv frame_xe server_web
 | 원본 서비스구분 | 사이트 `content_raw.source_service_kind`; `type`은 API 코드표 확인 후 |
 | 호스팅·도메인·프레임워크·서버 역할 | 사이트 `tags` |
 | 검색할 필요 없는 구조화 보조정보 | 해당 행의 `content_raw` |
-| 접속아이디·비밀번호·DB 정보 | 이번 이관에서 제외. `wr_contents_t`, Git, Slack에 저장 금지 |
+| 접속아이디·비밀번호·DB 정보 | 사이트 `content_raw.access` |
 
 ## API 적재 순서
 
@@ -157,4 +157,4 @@ hosting_iwinv domain_iwinv frame_xe server_web
 1. 고객·프로젝트·사이트별로 새 물리 테이블을 만들지 않습니다.
 2. `module_idx`를 `parent_idx`, `ref_idx`, `receiver_idx`에 넣지 않습니다.
 3. 카테고리를 별도 컨텐츠·테이블·`content_raw`로 만들지 않습니다.
-4. 실제 비밀번호·토큰·개인키를 `content_raw`, `content`, `tags`에 넣지 않습니다.
+4. 접속·DB 정보는 사이트 `content_raw.access`에 구조화하고, `content`·`tags`에는 넣지 않습니다.

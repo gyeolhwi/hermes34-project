@@ -25,21 +25,21 @@
 | E | 서비스구분 | 사이트 `type` | 실제/테스트/관리자 변환표 확정 필요 |
 | F | 도메인주소 | 사이트 `url` | 공개 도메인/URL |
 | G | 호스팅주소 | 사이트 `url` | 호스팅·서버 URL. F와 쉼표로 결합 |
-| H | 접속아이디 | **공용 API 적재 안 함** | 이번 이관 범위에서 제외 |
-| I | 접속비밀번호 | **공용 API 적재 안 함** | 이번 이관 범위에서 제외 |
-| J | 관리자아이디 | **공용 API 적재 안 함** | 이번 이관 범위에서 제외 |
-| K | 관리자비밀번호 | **공용 API 적재 안 함** | 이번 이관 범위에서 제외 |
-| L | DB접속경로 | **공용 API 적재 안 함** | 이번 이관 범위에서 제외 |
-| M | DB아이디 | **공용 API 적재 안 함** | 이번 이관 범위에서 제외 |
-| N | DB비밀번호 | **공용 API 적재 안 함** | 이번 이관 범위에서 제외 |
-| O | 고객연락처 | 고객 `content_raw.contact[]` | 담당자·전화 단위로 정제 후 JSON화 |
-| P | 고객이메일 | 고객 `content_raw.contact[]` | 담당자·이메일 단위로 정제 후 JSON화 |
+| H | 접속아이디 | 사이트 `content_raw.access.hosting.id` | 원본값 보존 |
+| I | 접속비밀번호 | 사이트 `content_raw.access.hosting.password` | 원본값 보존 |
+| J | 관리자아이디 | 사이트 `content_raw.access.admin.id` | 원본값 보존 |
+| K | 관리자비밀번호 | 사이트 `content_raw.access.admin.password` | 원본값 보존 |
+| L | DB접속경로 | 사이트 `content_raw.access.database.url` | 원본값 보존 |
+| M | DB아이디 | 사이트 `content_raw.access.database.id` | 원본값 보존 |
+| N | DB비밀번호 | 사이트 `content_raw.access.database.password` | 원본값 보존 |
+| O | 고객연락처 | 고객 `content_raw.contact[]` + 사이트 `content_raw.source.customer_contact` | 고객 미확정 상태에서도 원문 보존 |
+| P | 고객이메일 | 고객 `content_raw.contact[]` + 사이트 `content_raw.source.customer_email` | 고객 미확정 상태에서도 원문 보존 |
 | Q | 도메인등록업체 | 사이트 `tags` | `domain_*` |
 | R | 호스팅사 | 사이트 `tags` | `hosting_*` |
 | S | 프레임워크 | 사이트 `tags` | `frame_*` |
 | T | 검수메모 | 사이트 `content` | 라벨을 유지한 일반 메모 |
 | U | 비고 | 사이트 `content` | 라벨을 유지한 일반 메모 |
-| V | 작업자 | 사이트 `receiver_idx` | member의 실제 `idx` 조회 필요 |
+| V | 작업자 | 사이트 `receiver_idx` + `content_raw.source.operator` | member 대조 전에도 원문 보존 |
 | W | 개설일 | 사이트 `content_raw.opened_at` | ISO 날짜로 정규화 |
 
 ## 한 서비스 행을 API에 넣는 구조
@@ -116,17 +116,63 @@
 }
 ```
 
-## H~N 열은 왜 적재하지 않는가
+## H~N 접속·DB 정보 저장 방식
 
-H~N 열은 접근 아이디·비밀번호·DB 접속정보입니다.
+H~N 열도 누락하지 않고 사이트 행의 `content_raw.access` 객체에 저장합니다. `content_raw`는 공용 API에서 문자열로 받으므로 아래 JSON 전체를 직렬화해 저장합니다.
 
-`제한 저장소`라는 표현은 이 문서에서 혼란을 줬으므로 사용하지 않습니다. 이것은 현재 정해진 별도 시스템의 이름이 아닙니다.
+```json
+{
+  "access": {
+    "hosting": {
+      "id": "원본 H열 접속아이디",
+      "password": "원본 I열 접속비밀번호"
+    },
+    "admin": {
+      "id": "원본 J열 관리자아이디",
+      "password": "원본 K열 관리자비밀번호"
+    },
+    "database": {
+      "url": "원본 L열 DB접속경로",
+      "id": "원본 M열 DB아이디",
+      "password": "원본 N열 DB비밀번호"
+    }
+  }
+}
+```
 
-이번 공용 API 이관에서는 H~N의 값을 **`wr_contents_t` 어느 필드에도 저장하지 않는다**는 뜻입니다.
+접속정보는 검색 태그나 일반 메모가 아니므로 `tags`·`content`가 아닌 `content_raw`에만 넣습니다. 실제 이관 전에는 공용 API의 `content_raw` 접근권한·암호화 방식이 별도로 확인돼야 합니다.
 
-1. 접속아이디·비밀번호·DB 접속정보는 `content_raw`, `content`, `tags`에 넣지 않습니다.
-2. 이 값들을 나중에 관리해야 하는지는 별도 운영 결정입니다. 그 저장 위치는 현재 이관 설계 범위에 포함하지 않습니다.
-3. 연락처는 업무 데이터이므로 고객이 확정된 뒤 담당자별 이름·전화·이메일 단위로 검수해 저장합니다.
+## 원본값 전체 보존 원칙
+
+원본 23개 열이 변환 과정에서 사라지지 않도록, 사이트 `content_raw.source`에 원문값을 함께 보존합니다. `title`, `url`, `tags`, `content`, `receiver_idx`는 빠른 조회를 위한 API 필드이고, `source`는 이관 근거입니다.
+
+```json
+{
+  "source": {
+    "service_id": "A열 서비스ID",
+    "operation_status": "B열 운영상태",
+    "service_name": "C열 서비스명",
+    "category": "D열 카테고리",
+    "service_kind": "E열 서비스구분",
+    "domain_url": "F열 도메인주소",
+    "hosting_url": "G열 호스팅주소",
+    "customer_contact": "O열 고객연락처",
+    "customer_email": "P열 고객이메일",
+    "domain_registrar": "Q열 도메인등록업체",
+    "hosting_provider": "R열 호스팅사",
+    "framework": "S열 프레임워크",
+    "inspection_memo": "T열 검수메모",
+    "note": "U열 비고",
+    "operator": "V열 작업자",
+    "opened_at": "W열 개설일"
+  },
+  "access": {
+    "hosting": {"id": "H열", "password": "I열"},
+    "admin": {"id": "J열", "password": "K열"},
+    "database": {"url": "L열", "id": "M열", "password": "N열"}
+  }
+}
+```
 
 ## 적재 전 확정할 항목
 

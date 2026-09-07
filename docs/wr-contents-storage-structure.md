@@ -6,7 +6,7 @@
 - 저장 대상: 우리기획 공용 API가 저장하는 **`wr_contents_t`** 컨텐츠 행
 - 고객·프로젝트·사이트별 신규 테이블을 만들지 않습니다.
 - 공용 API를 통해 저장합니다. 여기서 말하는 행은 API 저장 결과인 `wr_contents_t` 행입니다.
-- 실제 비밀번호·토큰·개인키는 원본에 있더라도 `wr_contents_t`에 저장하지 않습니다.
+- 원본의 모든 열을 누락하지 않고 적재합니다. 접속·DB 정보는 사이트 `content_raw.access`에 구조화합니다.
 
 ## 전체 구조
 
@@ -162,15 +162,15 @@ domain_gabia hosting_iwinv frame_xe
 | E 서비스구분 | 원본값은 사이트 `content_raw.source_service_kind`; `type`은 API 코드표 확정 후 |
 | F 도메인주소 | 사이트 `url` |
 | G 호스팅주소 | 사이트 `url` |
-| H~N 접속·DB 정보 | 이번 이관에서 제외; `wr_contents_t`에 저장하지 않음 |
-| O 고객연락처 | 고객 `content_raw.contact[]` (고객 확정 후) |
-| P 고객이메일 | 고객 `content_raw.contact[]` (고객 확정 후) |
+| H~N 접속·DB 정보 | 사이트 `content_raw.access.hosting` / `admin` / `database` |
+| O 고객연락처 | 고객 `content_raw.contact[]`; 고객 미확정 시에도 사이트 `content_raw.source.customer_contact`에 원문 보존 |
+| P 고객이메일 | 고객 `content_raw.contact[]`; 고객 미확정 시에도 사이트 `content_raw.source.customer_email`에 원문 보존 |
 | Q 도메인등록업체 | 사이트 `tags`의 `domain_*` |
 | R 호스팅사 | 사이트 `tags`의 `hosting_*` |
 | S 프레임워크 | 사이트 `tags`의 `frame_*` |
 | T 검수메모 | 사이트 `content` |
 | U 비고 | 사이트 `content` 또는 프로젝트 공통 메모 |
-| V 작업자 | member 대조 후 사이트 `receiver_idx` |
+| V 작업자 | member 대조 후 사이트 `receiver_idx`; 대조 전에도 `content_raw.source.operator`에 원문 보존 |
 | W 개설일 | 프로젝트·사이트 `content_raw.opened_at` |
 
 ## 예시: 엑셀 한 행이 `wr_contents_t`에 저장되는 모습
@@ -198,7 +198,7 @@ domain_gabia hosting_iwinv frame_xe
 | V 작업자 | `홍작업자` |
 | W 개설일 | `2024-05-20` |
 
-H~N의 접속·DB 정보는 이 예시와 API payload에서 의도적으로 제외합니다.
+H~N의 접속·DB 정보도 사이트 `content_raw.access`에 넣습니다. 아래 예시에서는 실제 비밀값 대신 필드 위치만 표시합니다.
 
 ### 2) 고객 컨텐츠 행 — 고객명이 확정된 경우만
 
@@ -248,7 +248,7 @@ API 생성 응답: project.idx = "project-uuid-001"
   "tags": "domain_gabia hosting_iwinv frame_xe",
   "receiver_idx": "member-uuid-001",
   "content": "[검수메모] 메인 페이지 점검 완료\n\n[비고] 관리자 URL은 별도 확인 필요",
-  "content_raw": "{\"source_service_id\":\"SVC-201\",\"source_operation_status\":\"운영\",\"source_service_kind\":\"실제\",\"opened_at\":\"2024-05-20\"}"
+  "content_raw": "{\"source\":{\"service_id\":\"SVC-201\",\"operation_status\":\"운영\",\"service_name\":\"샘플교회 홈페이지\",\"category\":\"교회\",\"service_kind\":\"실제\",\"domain_url\":\"samplechurch.example.kr\",\"hosting_url\":\"samplechurch.iwinv.net\",\"customer_contact\":\"김담당: 010-0000-0000\",\"customer_email\":\"manager@samplechurch.example.kr\",\"domain_registrar\":\"가비아\",\"hosting_provider\":\"iwinv\",\"framework\":\"XE\",\"inspection_memo\":\"메인 페이지 점검 완료\",\"note\":\"관리자 URL은 별도 확인 필요\",\"operator\":\"홍작업자\",\"opened_at\":\"2024-05-20\"},\"access\":{\"hosting\":{\"id\":\"H열 값\",\"password\":\"I열 값\"},\"admin\":{\"id\":\"J열 값\",\"password\":\"K열 값\"},\"database\":{\"url\":\"L열 값\",\"id\":\"M열 값\",\"password\":\"N열 값\"}}}"
 }
 ```
 
@@ -262,7 +262,7 @@ API 생성 응답: project.idx = "project-uuid-001"
 |---|---|---|---|---|---|---|---|---|
 | `customer-uuid-001` | 고객 | 샘플교회 | — | — | — | — | — | `contact[]` |
 | `project-uuid-001` | 프로젝트 | 샘플교회 홈페이지 | `customer-uuid-001` | — | — | `category_church` | — | `source_service_id=SVC-201`, `source_operation_status=운영`, `opened_at=2024-05-20` |
-| `site-uuid-001` | 사이트 | — | — | `project-uuid-001` | `https://samplechurch.example.kr,https://samplechurch.iwinv.net` | `domain_gabia hosting_iwinv frame_xe` | `member-uuid-001` | `source_service_id=SVC-201`, `source_service_kind=실제`, `opened_at=2024-05-20` |
+| `site-uuid-001` | 사이트 | — | — | `project-uuid-001` | `https://samplechurch.example.kr,https://samplechurch.iwinv.net` | `domain_gabia hosting_iwinv frame_xe` | `member-uuid-001` | `source` + `access`에 원본 A~W 전체 |
 
 그래서 목록에서 고객 행을 열면 연락처가 보이고, 프로젝트 행을 열면 고객 행의 `idx`가 `ref_idx`에 보이며, 사이트 행을 열면 프로젝트 행의 `idx`가 `parent_idx`에 보입니다.
 
