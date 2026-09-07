@@ -5,7 +5,7 @@ Hermes34 고객시트 데이터는 고객·프로젝트·사이트별 신규 테
 ## 문서
 
 1. [서비스 시트 → 공용 API 필드 매핑](docs/service-sheet-api-field-mapping.md)
-   - 참조한 실제 엑셀 파일·시트·30개 원본 필드 목록
+   - 사용자가 제공한 엑셀 파일·시트·23개 원본 필드 목록
    - 원본 열 → 공용 API payload 필드별 매핑 및 적재 보류 항목
 2. [DoWeb `wr_content_t` 적재 규격](docs/doweb-content-structure.md)
    - 고객·프로젝트·사이트 행의 `module_idx`, `idx`, `ref_idx`, `parent_idx` 사용 기준
