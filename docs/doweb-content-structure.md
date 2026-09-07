@@ -2,6 +2,8 @@
 
 ## 핵심
 
+실제 서비스 시트의 열별 적재 여부와 API 필드 매핑은 [서비스 시트 → 공용 API 필드 매핑](service-sheet-api-field-mapping.md)을 먼저 봅니다.
+
 Hermes34 고객시트를 우리기획 공용 API로 이관할 때 **별도의 `customers`, `projects`, `sites`, `customer_contacts` 같은 정규화 테이블을 만들거나 서로 FK로 엮지 않습니다.**
 
 공용 API가 받는 컨텐츠 한 건이 DoWeb의 공용 컨텐츠 테이블 **`wr_content_t`의 한 행**으로 저장됩니다. 고객·프로젝트·사이트는 물리 테이블이 아니라 `module_idx`로 구분하는 논리적인 컨텐츠 종류입니다.
