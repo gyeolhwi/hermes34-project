@@ -1,4 +1,4 @@
-# Hermes34 고객시트 → DoWeb `wr_content_t` 적재 규격
+# Hermes34 고객시트 → DoWeb `wr_contents_t` 적재 규격
 
 ## 핵심
 
@@ -6,27 +6,27 @@
 
 Hermes34 고객시트를 우리기획 공용 API로 이관할 때 **별도의 `customers`, `projects`, `sites`, `customer_contacts` 같은 정규화 테이블을 만들거나 서로 FK로 엮지 않습니다.**
 
-공용 API가 받는 컨텐츠 한 건이 DoWeb의 공용 컨텐츠 테이블 **`wr_content_t`의 한 행**으로 저장됩니다. 고객·프로젝트·사이트는 물리 테이블이 아니라 `module_idx`로 구분하는 논리적인 컨텐츠 종류입니다.
+공용 API가 받는 컨텐츠 한 건이 DoWeb의 공용 컨텐츠 테이블 **`wr_contents_t`의 한 행**으로 저장됩니다. 고객·프로젝트·사이트는 물리 테이블이 아니라 `module_idx`로 구분하는 논리적인 컨텐츠 종류입니다.
 
 ```text
 고객시트 행/정보
   → 공용 API의 contents 생성·수정 요청
-    → wr_content_t 행 1건 저장
+    → wr_contents_t 행 1건 저장
 ```
 
 > 운영 데이터 입력은 공용 API를 사용합니다. API를 우회해 DB에 직접 INSERT하는 것은 API의 검증·권한·후처리 규칙을 건너뛸 수 있으므로 이 문서는 API 요청 payload 기준으로 설명합니다.
 
 ## 공용 컨텐츠 종류
 
-| 논리 종류 | `module_idx` | `wr_content_t`에 저장되는 한 행의 의미 |
+| 논리 종류 | `module_idx` | `wr_contents_t`에 저장되는 한 행의 의미 |
 |---|---|---|
 | 고객 정보 | `01a05700-8c1d-7cd4-8b2d-fac77f865a9f` | 고객사/기관 1건 |
 | 프로젝트 정보 | `01a05701-ed99-7cfa-841e-ec6f6c9922a0` | 고객의 서비스/유지보수 프로젝트 1건 |
 | 사이트 정보 | `01a05702-067e-729b-85ab-deb5b0836082` | 프로젝트에 속한 운영 대상 사이트 1건 |
 
 - `module_idx`는 컨텐츠 종류를 구분하는 값입니다.
-- API가 생성 후 반환하는 `idx`가 해당 `wr_content_t` 행의 식별자입니다.
-- 아래 관계도 DB FK가 아니라, 같은 `wr_content_t` 행끼리 `idx` 문자열을 참조하는 운영 규칙입니다.
+- API가 생성 후 반환하는 `idx`가 해당 `wr_contents_t` 행의 식별자입니다.
+- 아래 관계도 DB FK가 아니라, 같은 `wr_contents_t` 행끼리 `idx` 문자열을 참조하는 운영 규칙입니다.
 
 ## 연결 방식
 
@@ -77,7 +77,7 @@ Hermes34 고객시트를 우리기획 공용 API로 이관할 때 **별도의 `c
 
 - 연락처가 여러 개면 `contact` 배열에 객체를 추가합니다.
 - `content_raw`는 **문자열 필드에 JSON을 직렬화하여** 넣습니다.
-- 이 JSON 자체가 `wr_content_t.content_raw`의 값입니다. 연락처를 별도 `customer_contacts` 테이블로 나누지 않습니다.
+- 이 JSON 자체가 `wr_contents_t.content_raw`의 값입니다. 연락처를 별도 `customer_contacts` 테이블로 나누지 않습니다.
 
 ## 2. 프로젝트 행
 
@@ -112,7 +112,7 @@ category_maintenance category_cms
 |---|---|
 | `module_idx` | 사이트 정보 모듈 ID |
 | `parent_idx` | 연결할 프로젝트 행의 `idx` |
-| `type` | 운영 환경: `production`, `development`, `staging`, `other` |
+| `type` | 공용 API 사이트 유형 코드. 원본 `서비스구분`은 코드표 확인 뒤 변환 |
 | `url` | 공개 URL, 호스팅/서버 URL, 관리자 URL을 쉼표로 구분 |
 | `tags` | 호스팅·도메인·프레임워크·서버 역할 등 검색용 정보 |
 | `content_raw` | 검색하지 않는 구조화 보조정보 및 제한 저장소 참조 |
@@ -139,10 +139,10 @@ hosting_iwinv domain_iwinv frame_xe server_web
 |---|---|
 | 고객 담당자·연락처 | 고객 `content_raw.contact[]` |
 | 프로젝트 카테고리 | 프로젝트 `tags` |
-| 운영/개발/스테이징 | 사이트 `type` |
+| 원본 서비스구분 | 사이트 `content_raw.source_service_kind`; `type`은 API 코드표 확인 후 |
 | 호스팅·도메인·프레임워크·서버 역할 | 사이트 `tags` |
 | 검색할 필요 없는 구조화 보조정보 | 해당 행의 `content_raw` |
-| 실제 비밀번호·토큰·개인키 | 제한 저장소만. `wr_content_t`와 Git·Slack에는 저장 금지 |
+| 실제 비밀번호·토큰·개인키 | 제한 저장소만. `wr_contents_t`와 Git·Slack에는 저장 금지 |
 
 ## API 적재 순서
 
@@ -150,7 +150,7 @@ hosting_iwinv domain_iwinv frame_xe server_web
 2. 프로젝트 요청을 생성합니다. `ref_idx = customer.idx`를 넣습니다.
 3. 응답의 `project.idx`를 확보합니다.
 4. 사이트 요청을 생성합니다. `parent_idx = project.idx`를 넣습니다.
-5. 모든 요청은 공용 API로 수행하며, 각 결과가 `wr_content_t`에 저장됐는지 API 응답과 목록 조회로 확인합니다.
+5. 모든 요청은 공용 API로 수행하며, 각 결과가 `wr_contents_t`에 저장됐는지 API 응답과 목록 조회로 확인합니다.
 
 ## 금지 사항
 
