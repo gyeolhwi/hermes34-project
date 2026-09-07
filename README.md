@@ -19,7 +19,8 @@ wr_content_t
 
 1. [3모듈 ERD와 필드 구조](docs/wr-content-erd.md)
 2. [서비스 시트 → 3모듈 매핑](docs/service-sheet-api-field-mapping.md)
-3. [공용 API 적재 규격](docs/doweb-content-structure.md)
+3. [원본 시트·3모듈 정합성 점검](docs/data-integrity-check.md)
+4. [공용 API 적재 규격](docs/doweb-content-structure.md)
 
 ## 공통 원칙
 
