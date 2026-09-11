@@ -1,25 +1,31 @@
 # `wr_content_t` 3모듈 ERD와 필드 구조
 
-고객·프로젝트·사이트는 별도 테이블이 아닌 `module_idx`가 다른 `wr_content_t` 행입니다.
+고객·프로젝트·서비스는 별도 테이블이 아닌 `module_idx`가 다른 `wr_content_t` 행입니다.
 
 ```mermaid
 erDiagram
     CUSTOMER_MODULE ||--o{ PROJECT_MODULE : "project.parent_idx = customer.idx"
-    PROJECT_MODULE ||--o{ SITE_MODULE : "site.parent_idx = project.idx"
-    MEMBER ||--o{ SITE_MODULE : "site.receiver_idx = member.idx"
-    CUSTOMER_MODULE { string idx PK }
+    PROJECT_MODULE ||--o{ SERVICE_MODULE : "service.parent_idx = project.idx"
+    MEMBER ||--o{ SERVICE_MODULE : "site.receiver_idx = member.idx"
+    CUSTOMER_MODULE {
+      string idx PK "wr_content_t.idx"
+      string module_idx "고객 모듈"
+      string title "고객명"
+      string content_raw "customer{name_source}; contact[]"
+      string content "고객 메모"
+    }
     PROJECT_MODULE { string parent_idx FK
                      string status
                      string date_start
                      string date_end }
-    SITE_MODULE { string parent_idx FK
+    SERVICE_MODULE { string parent_idx FK
                   string type
                   string url }
 ```
 
 ## 공통 필드 사용
 
-| 필드 | 고객 | 프로젝트 | 사이트 |
+| 필드 | 고객 | 프로젝트 | 서비스 |
 |---|---|---|---|
 | `parent_idx` | — | 고객 `idx` | 프로젝트 `idx` |
 | `title` | 고객명 | 서비스명 | 필요 시 표시명 |
@@ -40,7 +46,7 @@ erDiagram
 |---|---|
 | 고객 | 고객명 매핑 근거, 담당자 연락처 배열 |
 | 프로젝트 | 원본 서비스ID |
-| 사이트 | 고객 연락처·이메일 원문, 접속·DB 정보 |
+| 서비스 | 고객 연락처·이메일 원문, 접속·DB 정보 |
 
 ### 프로젝트 예시
 
@@ -50,7 +56,7 @@ erDiagram
 
 `title`, `status`, `date_start`, `date_end`, `tags`는 공용 필드에 저장합니다.
 
-### 사이트 예시
+### 서비스 예시
 
 ```json
 {
@@ -63,11 +69,11 @@ erDiagram
 }
 ```
 
-사이트의 `type`은 `구분 (개발/운영)`, `url`은 `도메인주소, 호스팅주소` 형식의 공용 필드입니다.
+서비스의 `type`은 `구분 (개발/운영)`, `url`은 `도메인주소, 호스팅주소` 형식의 공용 필드입니다.
 
 ## 적재 순서
 
 1. 고객 행 생성 후 `customer.idx`를 받습니다.
 2. 프로젝트 `parent_idx`에 고객 `idx`를 설정하고, `date_end`는 종료일 원본 또는 `2999-12-31`로 설정합니다.
-3. 사이트 `parent_idx`에 프로젝트 `idx`를 설정하고 `type`, `url`을 공용 필드에 넣습니다.
+3. 서비스 `parent_idx`에 프로젝트 `idx`를 설정하고 `type`, `url`을 공용 필드에 넣습니다.
 4. `content_raw` JSON과 관계값을 검증합니다.

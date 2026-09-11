@@ -5,7 +5,7 @@
 ```text
 고객: idx = customer.idx
 프로젝트: parent_idx = customer.idx, idx = project.idx
-사이트: parent_idx = project.idx
+서비스: parent_idx = project.idx
 ```
 
 ## 모듈별 핵심 필드
@@ -14,16 +14,16 @@
 |---|---|---|
 | 고객 | `title`, `content` | 고객명 근거·연락처 |
 | 프로젝트 | `parent_idx`, `title`, `status`, `date_start`, `date_end`, `tags`, `content` | 서비스ID |
-| 사이트 | `parent_idx`, `type`, `url`, `tags`, `content`, `receiver_idx` | 고객 연락처·접속정보 |
+| 서비스 | `parent_idx`, `type`, `url`, `tags`, `content`, `receiver_idx` | 고객 연락처·접속정보 |
 
 ## 필드 사용 기준
 
 - 프로젝트 `date_start`에는 개설일을, `date_end`에는 종료일 원본 또는 `2999-12-31`을 저장합니다.
-- 사이트 `type`에는 `구분 (개발/운영)`을 저장합니다.
-- 사이트 `url`에는 `도메인주소, 호스팅주소`를 쉼표로 구분해 저장합니다.
+- 서비스 `type`에는 `구분 (개발/운영)`을 저장합니다.
+- 서비스 `url`에는 `도메인주소, 호스팅주소`를 쉼표로 구분해 저장합니다.
 - 공용·관계 필드에 저장한 값은 `content_raw`에 넣지 않습니다.
 
-## 사이트 `content_raw` 형태
+## 서비스 `content_raw` 형태
 
 ```json
 {
