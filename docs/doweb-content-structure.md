@@ -2,14 +2,14 @@
 
 ## 구성 순서
 
-모든 데이터는 `wr_content_t`에 저장하고, **고객 → 프로젝트 → 사이트** 순서로 연결합니다.
+모든 데이터는 `wr_content_t`에 저장하고 고객 → 프로젝트 → 사이트 순서로 연결합니다.
 
 ```text
 고객 모듈 행
   idx = customer.idx
 
 프로젝트 모듈 행
-  ref_idx = customer.idx
+  parent_idx = customer.idx
   idx = project.idx
 
 사이트 모듈 행
@@ -22,9 +22,9 @@
 
 | 모듈 | 연결 필드 | 일반 필드 | `content_raw` 역할 |
 |---|---|---|---|
-| 고객 | — | `title` 고객명 | 고객 원본·연락처 `contact[]` |
-| 프로젝트 | `ref_idx = customer.idx` | `title`, `tags`, `content` | 서비스ID·카테고리·운영상태·개설일 |
-| 사이트 | `parent_idx = project.idx` | `url`, `tags`, `content`, `receiver_idx` | 원본 서비스 시트 A~W 전체 |
+| 고객 | — | `title`, `content` | 고객명 근거·연락처 `contact[]` |
+| 프로젝트 | `parent_idx = customer.idx` | `title`, `status`, `type`, `date_start`, `date_end`, `tags`, `content` | 서비스ID 등 공용 필드에 없는 원본 식별값 |
+| 사이트 | `parent_idx = project.idx` | `url`, `tags`, `content`, `receiver_idx` | 호스팅주소, 고객 연락처, 접속정보 |
 
 ## 필드 사용 기준
 
@@ -32,38 +32,28 @@
 |---|---|
 | `module_idx` | 고객/프로젝트/사이트 모듈 구분 |
 | `idx` | 생성된 행 식별자·다음 모듈 연결값 |
-| `ref_idx` | 프로젝트가 고객을 가리킴 |
-| `parent_idx` | 사이트가 프로젝트를 가리킴 |
+| `parent_idx` | 고객→프로젝트 또는 프로젝트→사이트 부모 행 연결 |
 | `title` | 고객명 또는 서비스명 |
-| `url` | 사이트 도메인주소·호스팅주소 |
+| `status` | 운영상태 |
+| `type` | 서비스구분 |
+| `date_start` | 개설일 또는 시작일 |
+| `date_end` | 종료일; 원본 종료일이 있을 때만 사용 |
+| `url` | 사이트 대표 도메인주소 |
 | `tags` | 검색용 분류: `category_*`, `domain_*`, `hosting_*`, `frame_*` |
 | `content` | 사람이 읽는 검수메모·비고 |
-| `content_raw` | JSON 문자열. 원본값 전체와 다중값·접속정보 구조화 |
+| `content_raw` | JSON 문자열. 공용·관계 필드에 없는 원본값, 다중값, 접속정보 |
 | `receiver_idx` | 작업자 member `idx` |
 
-## 사이트 `content_raw` 최종 형태
+## 사이트 `content_raw` 형태
 
-사이트 행은 원본 서비스 시트 값 전체를 아래 구조로 보존합니다.
+사이트 행은 공용 필드로 이동하지 않은 원본값과 접속정보만 보존합니다.
 
 ```json
 {
   "source": {
-    "service_id": "A열 서비스ID",
-    "operation_status": "B열 운영상태",
-    "service_name": "C열 서비스명",
-    "category": "D열 카테고리",
-    "service_kind": "E열 서비스구분",
-    "domain_url": "F열 도메인주소",
     "hosting_url": "G열 호스팅주소",
     "customer_contact": "O열 고객연락처",
-    "customer_email": "P열 고객이메일",
-    "domain_registrar": "Q열 도메인등록업체",
-    "hosting_provider": "R열 호스팅사",
-    "framework": "S열 프레임워크",
-    "inspection_memo": "T열 검수메모",
-    "note": "U열 비고",
-    "operator": "V열 작업자",
-    "opened_at": "W열 개설일"
+    "customer_email": "P열 고객이메일"
   },
   "access": {
     "hosting": {"id": "H열", "password": "I열"},
@@ -73,4 +63,4 @@
 }
 ```
 
-세 모듈의 실제 ERD와 행 예시는 [3모듈 ERD와 필드 구조](wr-content-erd.md)를 참조합니다.
+`status`, `type`, 날짜, 제목, 카테고리, 대표 도메인, 태그, 메모, 작업자 연결값은 이 JSON에 넣지 않습니다. 세 모듈의 실제 ERD와 행 예시는 [3모듈 ERD와 필드 구조](wr-content-erd.md)를 참조합니다.
