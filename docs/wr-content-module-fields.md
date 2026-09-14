@@ -6,7 +6,7 @@
 
 | 필드 | 필수 | 용도 | 예시 | 중복 금지 / 비고 |
 |---|---|---|---|---|
-| `idx` | 생성 후 | 고객 행 식별자 | `customer-001` | 생성 결과를 프로젝트 `parent_idx`에 사용 |
+| `idx` | 생성 후 | 고객 행 식별자 | `01a05700-8c1d-7cd4-8b2d-fac77f865a9f` | 생성 결과를 프로젝트 `parent_idx`에 사용 |
 | `module_idx` | 예 | 고객 모듈 ID | `customer-module-id` | 모듈 설정값 사용 |
 | `title` | 예 | 확정된 고객명 | `예시 고객사` | 고객명 매핑 기준 확정 후 입력 |
 | `content_raw` | 조건부 | 고객명 매핑 근거, 담당자 연락처 배열 | `{"customer":{"name_source":"..."},"contact":[]}` | `title`·메모를 중복하지 않음 |
@@ -16,9 +16,9 @@
 
 | 필드 | 필수 | 용도 | 예시 | 중복 금지 / 비고 |
 |---|---|---|---|---|
-| `idx` | 생성 후 | 프로젝트 행 식별자 | `project-001` | 서비스 `parent_idx`에 사용 |
+| `idx` | 생성 후 | 프로젝트 행 식별자 | `01a05701-ed99-7cfa-841e-ec6f6c9922a0` | 서비스 `parent_idx`에 사용 |
 | `module_idx` | 예 | 프로젝트 모듈 ID | `project-module-id` | 모듈 설정값 사용 |
-| `parent_idx` | 예 | 부모 고객 `idx` | `customer-001` | 고객→프로젝트 연결 |
+| `parent_idx` | 예 | 부모 고객 `idx` | `01a05700-8c1d-7cd4-8b2d-fac77f865a9f` | 고객→프로젝트 연결 |
 | `title` | 예 | 서비스/프로젝트명 | `예시 서비스` | JSON에 중복하지 않음 |
 | `status` | 예 | 운영상태 | `운영` | 원본 B열, JSON에 중복하지 않음 |
 | `date_start` | 예 | 개설일/시작일 | `2024-05-20` | 원본 W열 |
@@ -31,9 +31,9 @@
 
 | 필드 | 필수 | 용도 | 예시 | 중복 금지 / 비고 |
 |---|---|---|---|---|
-| `idx` | 생성 후 | 서비스 행 식별자 | `service-001` | 행 식별자 |
+| `idx` | 생성 후 | 서비스 행 식별자 | `01a05702-067e-729b-85ab-deb5b0836082` | 행 식별자 |
 | `module_idx` | 예 | 서비스 모듈 ID | `service-module-id` | 모듈 설정값 사용 |
-| `parent_idx` | 예 | 부모 프로젝트 `idx` | `project-001` | 프로젝트→서비스 연결 |
+| `parent_idx` | 예 | 부모 프로젝트 `idx` | `01a05701-ed99-7cfa-841e-ec6f6c9922a0` | 프로젝트→서비스 연결 |
 | `type` | 예 | 구분 (개발/운영) | `운영` | 원본 E열, JSON에 중복하지 않음 |
 | `url` | 예 | 도메인주소와 호스팅주소 | `https://service.example.test, https://host.example.test` | 반드시 쉼표로 구분, JSON에 중복하지 않음 |
 | `tags` | 아니오 | 도메인·호스팅·프레임워크 태그 | `domain_example hosting_example frame_example` | 원본 Q~S의 검색용 정규화 값 |
