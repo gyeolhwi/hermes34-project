@@ -30,6 +30,11 @@
 | Q~S | 서비스 `tags` | 같은 의미의 JSON 키 없음 |
 | T~V | `content`, `receiver_idx` | member 대조 후 연결 |
 
+## 모듈·관계 점검
+
+- `module_idx`가 모듈명 텍스트가 아닌 해당 `wr_module_t.idx`인지 확인합니다.
+- 고객·프로젝트·서비스 게시판의 `module_use_child` 설정과 무관하게, 콘텐츠 연결은 아래 `parent_idx` 규칙을 사용합니다.
+
 ## 관계 점검
 
 - 프로젝트 `parent_idx`는 고객 행 `idx`와 일치해야 합니다.

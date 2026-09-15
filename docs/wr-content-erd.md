@@ -1,6 +1,6 @@
 # `wr_content_t` 3모듈 ERD와 필드 구조
 
-고객·프로젝트·서비스는 별도 테이블이 아닌 `module_idx`가 다른 `wr_content_t` 행입니다.
+고객·프로젝트·서비스는 `wr_module_t`에서 생성된 게시판(모듈)입니다. 콘텐츠는 모두 `wr_content_t` 행이며, 각 행의 `module_idx`는 게시판 이름이 아닌 해당 `wr_module_t.idx`입니다.
 
 ```mermaid
 erDiagram

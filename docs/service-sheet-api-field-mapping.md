@@ -41,6 +41,6 @@ project.idx  → service.parent_idx
 member.idx   → site.receiver_idx
 ```
 
-`module_idx` 예시는 고객 `고객`, 프로젝트 `프로젝트`, 서비스 `서비스`를 사용합니다. 실제 API가 별도 모듈 식별값을 요구하면 그 설정값을 우선합니다.
+`module_idx`에는 모듈명이 아닌 `wr_module_t.idx`를 사용합니다: 고객 `01a05700-8c1d-7cd4-8b2d-fac77f865a9f`, 프로젝트 `01a05701-ed99-7cfa-841e-ec6f6c9922a0`, 서비스 `01a05702-067e-729b-85ab-deb5b0836082`.
 
 고객명 전용 열은 없으므로 고객 모듈은 고객명 매핑표가 확정된 경우에 생성합니다. 고객 `content_raw`에는 고객명 매핑 근거와 연락처 배열만 보존합니다.
