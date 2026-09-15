@@ -83,3 +83,69 @@ company.idx ── company_idx ── 담당자
 
 project.idx ── parent_idx ── 서비스
 ```
+
+
+## CSV 예시별 입력값 안내
+
+아래의 `*-001` 값은 **예시용 식별자**입니다. 실제 적재 시에는 생성 API 또는 DB에서 반환한 실제 `idx`를 사용합니다. 모듈 ID만 현재 생성된 `wr_module_t.idx`를 고정으로 사용합니다.
+
+### 1. 업체 CSV (`company_example.csv`)
+
+| 필드 | 예시 입력값 | 실제 입력 기준 |
+|---|---|---|
+| `idx` | `company-001` | 업체 생성 후 반환된 `wr_company_t.idx` |
+| `company_name` | `예시 업체` | 실제 업체명 |
+| `company_number` | 빈 값 | 사업자번호가 있으면 입력 |
+| `company_phone`, `company_email` | 빈 값 | 업체 대표 연락처가 있으면 입력 |
+| `company_manager_*` | 빈 값 | 업체 대표 담당자 정보가 있으면 입력 |
+| `company_address*` | 빈 값 | 업체 주소가 있으면 입력 |
+| `tags` | 빈 값 | 업체 검색 태그가 필요할 때 입력 |
+| `admin_idx` | 빈 값 | 내부 관리 member를 지정할 때만 입력 |
+
+### 2. 담당자 CSV (`contact_module_example.csv`)
+
+| 필드 | 예시 입력값 | 실제 입력 기준 |
+|---|---|---|
+| `idx` | `contact-content-001` | 담당자 콘텐츠 생성 후 반환된 `idx` |
+| `module_idx` | `01a05700-8c1d-7cd4-8b2d-fac77f865a9f` | 담당자 모듈의 고정 ID |
+| `company_idx` | `company-001` | 소속 업체의 실제 `wr_company_t.idx` |
+| `name` | `예시 담당자` | 고객/서브 담당자명 |
+| `content` | `담당자 메모` | 역할·비고 등 메모; 없으면 빈 값 |
+| `contact` | `+821000000000` | 전화번호 등 연락처; 없으면 빈 값 |
+| `email` | `contact@example.test` | 이메일; 없으면 빈 값 |
+
+### 3. 프로젝트 CSV (`project_module_example.csv`)
+
+| 필드 | 예시 입력값 | 실제 입력 기준 |
+|---|---|---|
+| `idx` | `project-content-001` | 프로젝트 콘텐츠 생성 후 반환된 `idx` |
+| `module_idx` | `01a05701-ed99-7cfa-841e-ec6f6c9922a0` | 프로젝트 모듈의 고정 ID |
+| `ref_idx` | 빈 값 | 현재 구조에서는 비움; 별도 참조 규칙이 확정될 때만 입력 |
+| `company_idx` | `company-001` | 소속 업체의 실제 `idx` |
+| `title` | `예시 프로젝트` | 프로젝트명 |
+| `status` | `1` | `1=운영`, `-1=비운영` |
+| `date_start` | `2024-05-20` | 실제 시작일/개설일 (`YYYY-MM-DD`) |
+| `date_end` | `2999-12-31` | 실제 종료일; 없으면 기본값 `2999-12-31` |
+| `type`, `url`, `tags` | 빈 값 | 프로젝트에서 사용할 값이 있을 때만 입력 |
+| `receiver_idx`, `is_hidden` | 빈 값 | 내부 member/보호 설정이 필요한 경우만 입력 |
+| `content_raw` | `{"source":{"service_id":"SVC-001"}}` | 검색하지 않을 원본 식별값만 JSON으로 입력 |
+| `content` | `프로젝트 메모` | 사람이 읽는 비고 |
+
+### 4. 서비스 CSV (`service_module_example.csv`)
+
+| 필드 | 예시 입력값 | 실제 입력 기준 |
+|---|---|---|
+| `idx` | `service-content-001` | 서비스 콘텐츠 생성 후 반환된 `idx` |
+| `module_idx` | `01a05702-067e-729b-85ab-deb5b0836082` | 서비스 모듈의 고정 ID |
+| `parent_idx` | `project-content-001` | 귀속 프로젝트의 실제 콘텐츠 `idx` |
+| `company_idx` | `company-001` | 소속 업체의 실제 `idx`; 부모 프로젝트와 같은 업체인지 대조 |
+| `title` | `예시 서비스` | 서비스/사이트 표시명 |
+| `status` | `1` | `1=운영`, `-1=비운영` |
+| `date_start`, `date_end` | `2024-05-20`, `2999-12-31` | 실제 서비스 기간 (`YYYY-MM-DD`) |
+| `type` | `1` | `1=운영`, `2=개발`, `3=샘플` |
+| `url` | `https://service.example.test,https://host.example.test` | 도메인주소와 호스팅주소를 쉼표로 구분 |
+| `tags` | `hosting_example frame_example cat_example` | 검색용 호스팅·프레임워크·카테고리 태그 |
+| `receiver_idx` | 빈 값 | 내부 member 지정 시만 입력; 외부 고객 담당자는 담당자 모듈 사용 |
+| `is_hidden` | `1` | 민감 접속정보를 보관하는 서비스는 반드시 `1` |
+| `content_raw` | `{"accounts":[...]}` | 접속·DB·관리자 계정 등 검색 불필요한 민감 JSON; 실제 비밀번호는 외부 문서에 복사하지 않음 |
+| `content` | `서비스 메모` | 검수 내용·비고 |
