@@ -15,7 +15,7 @@
 | 열 | 원본 필드 | 최종 위치 | 중복 저장 금지 |
 |---|---|---|---|
 | A | 서비스ID | 프로젝트 `content_raw.source.service_id` | — |
-| B | 운영상태 | 프로젝트 `status` | `content_raw` |
+| B | 운영상태 | 프로젝트 `status`: `1=운영`, `-1=비운영` | `content_raw` |
 | C | 서비스명 | 프로젝트 `title` | `content_raw` |
 | D | 카테고리 | 프로젝트 `tags: category_*` | `content_raw` |
 | E | 구분 (개발/운영) | 서비스 `type` | `content_raw` |
@@ -38,5 +38,7 @@ customer.idx → project.parent_idx
 project.idx  → service.parent_idx
 member.idx   → site.receiver_idx
 ```
+
+`module_idx` 예시는 고객 `고객`, 프로젝트 `프로젝트`, 서비스 `서비스`를 사용합니다. 실제 API가 별도 모듈 식별값을 요구하면 그 설정값을 우선합니다.
 
 고객명 전용 열은 없으므로 고객 모듈은 고객명 매핑표가 확정된 경우에 생성합니다. 고객 `content_raw`에는 고객명 매핑 근거와 연락처 배열만 보존합니다.
