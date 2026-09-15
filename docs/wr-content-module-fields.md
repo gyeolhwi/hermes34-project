@@ -48,4 +48,4 @@
 3. `content_raw`는 JSON **문자열**로 전송하고 각 행에서 파싱 가능한지 확인합니다.
 4. 공용 필드로 저장한 값은 같은 의미의 `content_raw` 키로 다시 저장하지 않습니다.
 
-CSV 예시는 [examples/wr_content_module_example.csv](../examples/wr_content_module_example.csv)를 참조합니다.
+CSV 예시는 [고객](../examples/customer_module_example.csv)·[프로젝트](../examples/project_module_example.csv)·[서비스](../examples/service_module_example.csv) 모듈별 파일을 참조합니다.

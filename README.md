@@ -11,7 +11,7 @@ Hermes34는 물리적으로 **`wr_content_t` 한 테이블**을 사용합니다.
 3. [원본 시트·3모듈 정합성 점검](docs/data-integrity-check.md)
 4. [공용 API 적재 규격](docs/doweb-content-structure.md)
 5. [모듈별 필드표](docs/wr-content-module-fields.md)
-6. [3모듈 CSV 예시](examples/wr_content_module_example.csv)
+6. [모듈별 CSV 예시](examples/)
 
 ## 공통 원칙
 
