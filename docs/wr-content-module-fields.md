@@ -1,63 +1,85 @@
-# `wr_content_t` 모듈별 필드표
+# 업체·담당자·프로젝트·서비스 필드표
 
-고객·프로젝트·서비스는 `wr_module_t`에서 생성한 게시판(모듈)입니다. 각 게시판의 콘텐츠는 모두 `wr_content_t`에 저장하며, 콘텐츠 행의 `module_idx`에는 게시판 이름이 아닌 해당 `wr_module_t.idx`를 넣습니다. 아래 표의 **필수**는 구조화 예시를 위한 기준이며, 실제 API의 필수성·코드값은 적재 전에 대조합니다.
+## 역할 구분
 
+| 저장소 | 역할 |
+|---|---|
+| `wr_company_t` | 업체 기본정보 |
+| `wr_content_t` 담당자 모듈 | 업체에 속한 고객/서브 담당자 정보 |
+| `wr_content_t` 프로젝트 모듈 | 업체에 속한 프로젝트 정보 |
+| `wr_content_t` 서비스 모듈 | 업체에 속하고 프로젝트에 귀속되는 서비스 정보 |
 
-## CSV 공통 헤더
+`wr_module_t`의 담당자·프로젝트·서비스 게시판은 콘텐츠 행이 아닙니다. `wr_content_t.module_idx`에는 게시판의 실제 `idx`를 저장합니다.
 
-세 모듈 CSV는 모두 아래 **동일한 14개 헤더**를 유지합니다. 해당 모듈에서 쓰지 않는 필드는 생략하지 않고 CSV에서 `""`(빈 값)으로 표현합니다.
+## 업체 (`wr_company_t`)
+
+| 필드 | 용도 |
+|---|---|
+| `idx` | 업체 고유 ID; 콘텐츠 `company_idx`의 참조값 |
+| `company_name` | 업체명 |
+| `company_number`, `company_phone`, `company_email` | 업체 기본 연락처 |
+| `company_manager_*` | 업체 대표 담당자 정보 |
+| `company_address`, `company_address_2` | 업체 주소 |
+| `company_extras` | 업체 추가정보 |
+| `tags` | 업체 검색 태그 |
+| `admin_idx` | 관리 member ID |
+
+## 담당자 콘텐츠 (`module_idx=`01a05700-8c1d-7cd4-8b2d-fac77f865a9f)
+
+제공된 담당자 CSV 기준 필드입니다. 담당자는 업체의 고객/서브 담당자 역할입니다.
+
+| 필드 | 용도 |
+|---|---|
+| `idx` | 담당자 콘텐츠 ID |
+| `module_idx` | 담당자 모듈 ID |
+| `company_idx` | 소속 업체 ID |
+| `name` | 담당자명 |
+| `content` | 담당자 메모 |
+| `contact` | 연락처 |
+| `email` | 이메일 |
+
+## 프로젝트 콘텐츠 (`module_idx=`01a05701-ed99-7cfa-841e-ec6f6c9922a0)
+
+| 필드 | 용도 |
+|---|---|
+| `idx` | 프로젝트 콘텐츠 ID |
+| `module_idx` | 프로젝트 모듈 ID |
+| `ref_idx` | 현재 제공 데이터에서는 비어 있는 보조 참조값 |
+| `company_idx` | 소속 업체 ID |
+| `title` | 프로젝트명 |
+| `status` | `1=운영`, `-1=비운영` |
+| `date_start`, `date_end` | 시작일·종료일; 종료일 없으면 `2999-12-31` |
+| `type`, `url`, `tags` | 프로젝트 분류·주소·검색 태그; 현재 예시에서는 비어 있을 수 있음 |
+| `receiver_idx` | 내부 member 연결값; 외부 담당자 연결 기준으로 쓰지 않음 |
+| `is_hidden` | 보호 처리 설정값 |
+| `content_raw` | 검색 불필요한 원본 JSON |
+| `content` | 사람이 읽는 메모 |
+
+## 서비스 콘텐츠 (`module_idx=`01a05702-067e-729b-85ab-deb5b0836082)
+
+| 필드 | 용도 |
+|---|---|
+| `idx` | 서비스 콘텐츠 ID |
+| `module_idx` | 서비스 모듈 ID |
+| `parent_idx` | 귀속 프로젝트 콘텐츠 `idx` |
+| `company_idx` | 소속 업체 ID; 프로젝트 귀속과 별개 |
+| `title` | 서비스명 |
+| `status` | `1=운영`, `-1=비운영` |
+| `date_start`, `date_end` | 서비스 시작일·종료일 |
+| `type` | `1=운영`, `2=개발`, `3=샘플` |
+| `url` | `도메인주소,호스팅주소` 형식 |
+| `tags` | 호스팅·프레임워크·카테고리 검색 태그 |
+| `receiver_idx` | 현재 비어 있음; 외부 담당자는 담당자 모듈에서 관리 |
+| `is_hidden` | 서비스 민감 데이터 보호를 위해 `1` |
+| `content_raw` | 접속·DB·관리자 계정 등 검색 불필요한 민감 JSON |
+| `content` | 서비스 메모 |
+
+## 관계
 
 ```text
-idx,module_idx,parent_idx,title,status,date_start,date_end,type,url,tags,receiver_idx,content_raw,content
+company.idx ── company_idx ── 담당자
+            ├─ company_idx ── 프로젝트
+            └─ company_idx ── 서비스
+
+project.idx ── parent_idx ── 서비스
 ```
-
-따라서 서비스 CSV에서도 `title`, `status`, `date_start`, `date_end`, `is_hidden` 헤더는 존재하며 값만 비어 있습니다. `type`, `url`, `tags`는 각각의 헤더 위치에 저장합니다.
-
-## 고객 모듈 (`CUSTOMER_MODULE`)
-
-| 필드 | 필수 | 용도 | 예시 | 중복 금지 / 비고 |
-|---|---|---|---|---|
-| `idx` | 생성 후 | 고객 행 식별자 | `01a05700-8c1d-7cd4-8b2d-fac77f865a9f` | 생성 결과를 프로젝트 `parent_idx`에 사용 |
-| `module_idx` | 예 | 고객 모듈 ID | `01a05700-8c1d-7cd4-8b2d-fac77f865a9f` | 고객 게시판의 `wr_module_t.idx` |
-| `title` | 예 | 확정된 고객명 | `예시 고객사` | 고객명 매핑 기준 확정 후 입력 |
-| `content_raw` | 조건부 | 고객명 매핑 근거, 담당자 연락처 배열 | `{"customer":{"name_source":"..."},"contact":[]}` | `title`·메모를 중복하지 않음 |
-| `content` | 아니오 | 고객 메모 | `고객 메모 예시` | 사람이 읽는 메모만 저장 |
-
-## 프로젝트 모듈 (`PROJECT_MODULE`)
-
-| 필드 | 필수 | 용도 | 예시 | 중복 금지 / 비고 |
-|---|---|---|---|---|
-| `idx` | 생성 후 | 프로젝트 행 식별자 | `01a05701-ed99-7cfa-841e-ec6f6c9922a0` | 서비스 `parent_idx`에 사용 |
-| `module_idx` | 예 | 프로젝트 모듈 ID | `01a05701-ed99-7cfa-841e-ec6f6c9922a0` | 프로젝트 게시판의 `wr_module_t.idx` |
-| `parent_idx` | 예 | 부모 고객 `idx` | `01a05700-8c1d-7cd4-8b2d-fac77f865a9f` | 고객→프로젝트 연결 |
-| `title` | 예 | 서비스/프로젝트명 | `예시 서비스` | JSON에 중복하지 않음 |
-| `status` | 예 | 운영상태 코드 | `1` | `1=운영`, `-1=비운영`; 원본 B열, JSON 중복 금지 |
-| `date_start` | 예 | 개설일/시작일 | `2024-05-20` | 원본 W열 |
-| `date_end` | 예 | 종료일/검색 상한 | `2999-12-31` | 종료일 원본이 없을 때 기본값 |
-| `tags` | 아니오 | 카테고리 검색 태그 | `category_example` | 원본 D열의 검색용 정규화 값 |
-| `content_raw` | 조건부 | 공용 필드에 없는 서비스ID | `{"source":{"service_id":"SVC-001"}}` | 상태·이름·날짜·태그 중복 금지 |
-| `content` | 아니오 | 프로젝트 메모 | `프로젝트 메모 예시` | 사람이 읽는 메모만 저장 |
-
-## 서비스 모듈 (`SERVICE_MODULE`)
-
-| 필드 | 필수 | 용도 | 예시 | 중복 금지 / 비고 |
-|---|---|---|---|---|
-| `idx` | 생성 후 | 서비스 행 식별자 | `01a05702-067e-729b-85ab-deb5b0836082` | 행 식별자 |
-| `module_idx` | 예 | 서비스 모듈 ID | `01a05702-067e-729b-85ab-deb5b0836082` | 서비스 게시판의 `wr_module_t.idx` |
-| `parent_idx` | 예 | 부모 프로젝트 `idx` | `01a05701-ed99-7cfa-841e-ec6f6c9922a0` | 프로젝트→서비스 연결 |
-| `type` | 예 | 구분 코드 | `1` | `1=운영`, `2=개발`, `3=샘플`; 원본 E열, JSON 중복 금지 |
-| `url` | 예 | 도메인주소와 호스팅주소 | `https://service.example.test, https://host.example.test` | 반드시 쉼표로 구분, JSON에 중복하지 않음 |
-| `tags` | 아니오 | 도메인·호스팅·프레임워크 태그 | `domain_example hosting_example frame_example` | 원본 Q~S의 검색용 정규화 값 |
-| `receiver_idx` | 아니오 | 담당자 member `idx` | 비움 | 원본 V열; 담당자를 연결하지 않으면 비워 둠 |
-| `is_hidden` | 예 | 민감 서비스 행 암호화 설정 | `1` | 서비스 행에 설정; 이 배포 환경에서 DB 암호화 처리 |
-| `content_raw` | 조건부 | 고객 연락처·이메일 원문, 접속·DB 정보 | `{"source":{},"access":{}}` | `type`, `url`, 태그, 메모, 작업자값 중복 금지 |
-| `content` | 아니오 | 검수메모·비고 | `서비스 메모 예시` | 사람이 읽는 메모만 저장 |
-
-## 연결 및 JSON 검증
-
-1. 고객 **콘텐츠** 행을 만든 뒤 반환된 `idx`를 프로젝트 콘텐츠 `parent_idx`에 넣습니다.
-2. 프로젝트 **콘텐츠** 행을 만든 뒤 반환된 `idx`를 서비스 콘텐츠 `parent_idx`에 넣습니다.
-3. `content_raw`는 JSON **문자열**로 전송하고 각 행에서 파싱 가능한지 확인합니다. 검색이 불필요하거나 암호화 보관이 필요한 값만 넣습니다.
-4. 공용 필드로 저장한 값은 같은 의미의 `content_raw` 키로 다시 저장하지 않습니다.
-
-CSV 예시는 [고객](../examples/customer_module_example.csv)·[프로젝트](../examples/project_module_example.csv)·[서비스](../examples/service_module_example.csv) 모듈별 파일을 참조합니다.
