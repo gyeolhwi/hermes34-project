@@ -5,13 +5,13 @@
 
 ## CSV 공통 헤더
 
-세 모듈 CSV는 모두 아래 **동일한 13개 헤더**를 유지합니다. 해당 모듈에서 쓰지 않는 필드는 생략하지 않고 CSV에서 `""`(빈 값)으로 표현합니다.
+세 모듈 CSV는 모두 아래 **동일한 14개 헤더**를 유지합니다. 해당 모듈에서 쓰지 않는 필드는 생략하지 않고 CSV에서 `""`(빈 값)으로 표현합니다.
 
 ```text
 idx,module_idx,parent_idx,title,status,date_start,date_end,type,url,tags,receiver_idx,content_raw,content
 ```
 
-따라서 서비스 CSV에서도 `title`, `status`, `date_start`, `date_end` 헤더는 존재하며 값만 비어 있습니다. `type`, `url`, `tags`는 각각의 헤더 위치에 저장합니다.
+따라서 서비스 CSV에서도 `title`, `status`, `date_start`, `date_end`, `is_hidden` 헤더는 존재하며 값만 비어 있습니다. `type`, `url`, `tags`는 각각의 헤더 위치에 저장합니다.
 
 ## 고객 모듈 (`CUSTOMER_MODULE`)
 
@@ -49,6 +49,7 @@ idx,module_idx,parent_idx,title,status,date_start,date_end,type,url,tags,receive
 | `url` | 예 | 도메인주소와 호스팅주소 | `https://service.example.test, https://host.example.test` | 반드시 쉼표로 구분, JSON에 중복하지 않음 |
 | `tags` | 아니오 | 도메인·호스팅·프레임워크 태그 | `domain_example hosting_example frame_example` | 원본 Q~S의 검색용 정규화 값 |
 | `receiver_idx` | 아니오 | 담당자 member `idx` | 비움 | 원본 V열; 담당자를 연결하지 않으면 비워 둠 |
+| `is_hidden` | 예 | 민감 서비스 행 암호화 설정 | `1` | 서비스 행에 설정; 이 배포 환경에서 DB 암호화 처리 |
 | `content_raw` | 조건부 | 고객 연락처·이메일 원문, 접속·DB 정보 | `{"source":{},"access":{}}` | `type`, `url`, 태그, 메모, 작업자값 중복 금지 |
 | `content` | 아니오 | 검수메모·비고 | `서비스 메모 예시` | 사람이 읽는 메모만 저장 |
 
@@ -56,7 +57,7 @@ idx,module_idx,parent_idx,title,status,date_start,date_end,type,url,tags,receive
 
 1. 고객 행을 만든 뒤 반환된 `idx`를 프로젝트 `parent_idx`에 넣습니다.
 2. 프로젝트 행을 만든 뒤 반환된 `idx`를 서비스 `parent_idx`에 넣습니다.
-3. `content_raw`는 JSON **문자열**로 전송하고 각 행에서 파싱 가능한지 확인합니다.
+3. `content_raw`는 JSON **문자열**로 전송하고 각 행에서 파싱 가능한지 확인합니다. 검색이 불필요하거나 암호화 보관이 필요한 값만 넣습니다.
 4. 공용 필드로 저장한 값은 같은 의미의 `content_raw` 키로 다시 저장하지 않습니다.
 
 CSV 예시는 [고객](../examples/customer_module_example.csv)·[프로젝트](../examples/project_module_example.csv)·[서비스](../examples/service_module_example.csv) 모듈별 파일을 참조합니다.

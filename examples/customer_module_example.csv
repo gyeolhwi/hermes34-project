@@ -1,2 +1,2 @@
-idx,module_idx,parent_idx,title,status,date_start,date_end,type,url,tags,receiver_idx,content_raw,content
-01a05700-8c1d-7cd4-8b2d-fac77f865a9f,고객,"",예시 고객사,"","","","","","","","{""customer"":{""name_source"":""예시 고객명 매핑""},""contact"":[{""type"":""email"",""name"":""담당자"",""contact"":""contact@example.test""}]}",고객 메모 예시
+idx,module_idx,parent_idx,title,status,date_start,date_end,type,url,tags,receiver_idx,is_hidden,content_raw,content
+01a05700-8c1d-7cd4-8b2d-fac77f865a9f,고객,"",예시 고객사,"","","","","","","","","{""customer"":{""name_source"":""예시 고객명 매핑""},""contact"":[{""type"":""email"",""name"":""담당자"",""contact"":""contact@example.test""}]}",고객 메모 예시

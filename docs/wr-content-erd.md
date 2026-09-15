@@ -20,7 +20,8 @@ erDiagram
                      string date_end }
     SERVICE_MODULE { string parent_idx FK
                   string type
-                  string url }
+                  string url
+                  string is_hidden "1: 민감 서비스 행 암호화" }
 ```
 
 ## 공통 필드 사용
@@ -36,11 +37,12 @@ erDiagram
 | `url` | — | — | `도메인주소, 호스팅주소` |
 | `tags` | — | 카테고리 | 도메인·호스팅·프레임워크 |
 | `receiver_idx` | — | — | 담당 member `idx` |
+| `is_hidden` | — | — | `1` (민감 서비스 행 DB 암호화) |
 | `content` | 고객 메모 | 프로젝트 메모 | 검수메모·비고 |
 
 ## `content_raw` 기준
 
-공용·관계 필드와 같은 의미의 키를 넣지 않습니다.
+공용·관계·검색 필드와 같은 의미의 키를 넣지 않습니다. 검색이 불필요하거나 암호화 보관이 필요한 값(예: 접속정보)을 보존합니다.
 
 | 모듈 | 보존값 |
 |---|---|

@@ -25,7 +25,7 @@
 | 종료일 | 프로젝트 `date_end` | 원본 종료일 또는 `2999-12-31` |
 | E | 서비스 `type` | `구분 (개발/운영)` 코드 대조, JSON 중복 없음 |
 | F~G | 서비스 `url` | `도메인주소, 호스팅주소` 순서·쉼표 구분 |
-| H~N | 서비스 `content_raw.access` | 유효 JSON, 구조별 보존 |
+| H~N | 서비스 `content_raw.access` | 유효 JSON, 구조별 보존; 서비스 `is_hidden=1` |
 | O~P | 서비스 원문, 고객 확정 후 고객 `contact[]` | 고객 매핑 전에도 보존 |
 | Q~S | 서비스 `tags` | 같은 의미의 JSON 키 없음 |
 | T~V | `content`, `receiver_idx` | member 대조 후 연결 |
@@ -35,7 +35,8 @@
 - 프로젝트 `parent_idx`는 고객 행 `idx`와 일치해야 합니다.
 - 서비스 `parent_idx`는 프로젝트 행 `idx`와 일치해야 합니다.
 - 서비스 `receiver_idx`는 대조된 member `idx`만 사용합니다.
-- 모든 `content_raw`는 유효 JSON이며 공용 필드값을 중복하지 않아야 합니다.
+- 모든 `content_raw`는 유효 JSON이며 공용·검색 필드값을 중복하지 않아야 합니다.
+- 접속·DB 정보가 있는 서비스 행은 `is_hidden=1`인지 확인합니다.
 
 ## 적재 전 확인
 

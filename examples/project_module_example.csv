@@ -1,2 +1,2 @@
-idx,module_idx,parent_idx,title,status,date_start,date_end,type,url,tags,receiver_idx,content_raw,content
-01a05701-ed99-7cfa-841e-ec6f6c9922a0,프로젝트,01a05700-8c1d-7cd4-8b2d-fac77f865a9f,예시 서비스,1,2024-05-20,2999-12-31,"","",category_example,"","{""source"":{""service_id"":""SVC-001""}}",프로젝트 메모 예시
+idx,module_idx,parent_idx,title,status,date_start,date_end,type,url,tags,receiver_idx,is_hidden,content_raw,content
+01a05701-ed99-7cfa-841e-ec6f6c9922a0,프로젝트,01a05700-8c1d-7cd4-8b2d-fac77f865a9f,예시 서비스,1,2024-05-20,2999-12-31,"","",category_example,"","","{""source"":{""service_id"":""SVC-001""}}",프로젝트 메모 예시
