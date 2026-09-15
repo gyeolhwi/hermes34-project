@@ -2,6 +2,17 @@
 
 고객·프로젝트·서비스는 별도 물리 테이블이 아니라 `module_idx`가 다른 같은 `wr_content_t` 행입니다. 아래 표의 **필수**는 구조화 예시를 위한 기준이며, 실제 API의 필수성·코드값은 적재 전에 대조합니다.
 
+
+## CSV 공통 헤더
+
+세 모듈 CSV는 모두 아래 **동일한 13개 헤더**를 유지합니다. 해당 모듈에서 쓰지 않는 필드는 생략하지 않고 CSV에서 `""`(빈 값)으로 표현합니다.
+
+```text
+idx,module_idx,parent_idx,title,status,date_start,date_end,type,url,tags,receiver_idx,content_raw,content
+```
+
+따라서 서비스 CSV에서도 `title`, `status`, `date_start`, `date_end` 헤더는 존재하며 값만 비어 있습니다. `type`, `url`, `tags`는 각각의 헤더 위치에 저장합니다.
+
 ## 고객 모듈 (`CUSTOMER_MODULE`)
 
 | 필드 | 필수 | 용도 | 예시 | 중복 금지 / 비고 |
