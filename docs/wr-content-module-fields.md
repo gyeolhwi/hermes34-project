@@ -96,7 +96,7 @@ project.idx ── parent_idx ── 서비스
 | `contact` | `contact_module.csv` → 담당자 `wr_content_t` | `company_idx`를 유지하고 고객/서브 담당자로 적재한다. |
 | `project` | `project_module.csv` → 프로젝트 `wr_content_t` | 업체 귀속 프로젝트로 적재한다. |
 | `service` + `site` | `service_module.csv` → 서비스 `wr_content_t` | 서비스 기본값·기간·상태는 일반 필드에 적재한다. |
-| `service_url` | 서비스 `url`, `tags` | 실제 서비스·호스팅 주소만 일반 서비스 필드로 보존한다. |
+| `service_url` | 서비스 `url` | 실제 서비스·호스팅 주소만 일반 서비스 필드로 보존한다. |
 | `credential` | 서비스 `content_raw.accounts[]` | 민감정보이므로 `is_hidden=1`; 각 계정에는 `type`, 필요 시 `url`, `id`, `pw`만 둔다. GitHub·일반 문서에는 실제 값을 기록하지 않는다. |
 | `access_check` | 정제 인계본에 유지 | 우리기획 현재 콘텐츠 필드에는 투영하지 않는다. |
 
@@ -104,9 +104,21 @@ project.idx ── parent_idx ── 서비스
 
 - `migrate=0` 또는 업체가 `merged_into`를 가진 항목은 자동 적재하지 않고 검토 대상으로 남긴다.
 - 봇 실행 후보는 서비스 상태만으로 고르지 않는다. `migrate=1`, 병합되지 않은 업체, `live_status=live/redirect`, 접속 사전점검을 함께 확인한다.
-- `site`는 도메인/배포 이력을 정리하기 위한 중간 식별자다. 우리기획 구조에는 별도 사이트 테이블이 없으므로 서비스 콘텐츠의 URL·태그·`content_raw`로 투영한다.
+- `site`는 도메인/배포 이력을 정리하기 위한 중간 식별자다. 우리기획 구조에는 별도 사이트 테이블이 없으므로 서비스 콘텐츠의 `url`로만 투영한다.
 - 모든 신규 `idx`는 UUID v7으로 생성한다. 기존 담당자·프로젝트·서비스의 `module_idx`는 아래 고정 모듈 ID를 그대로 쓴다.
 
+### 현재 이관 CSV의 최소 입력 원칙
+
+인계본에서 검증된 값과 사용자 지정 코드만 적재한다. 태그·업체 보조정보·메모·정제 이력·접속점검은 별도 인계본에 남기며, 우리기획 CSV에는 임의로 조합하거나 복사하지 않는다.
+
+| CSV | 값이 들어가는 필드 |
+|---|---|
+| `company.csv` | `idx`, `company_name` |
+| `contact_module.csv` | `idx`, `module_idx`, `company_idx`, `name`, `contact`, `email` |
+| `project_module.csv` | `idx`, `module_idx`, `company_idx`, `title`, `status`, `date_start`, `date_end`, `type` |
+| `service_module.csv` | `idx`, `module_idx`, `parent_idx`, `company_idx`, `title`, `status`, `date_start`, `date_end`, `type`, `url`, `is_hidden`, `content_raw.accounts` |
+
+비어 있는 대상 필드는 빈 값으로 둔다. `status`·`type` 원본 값이 비어 있거나 `unknown`인 경우에만 사용자 지정 코드 `0`을 쓴다.
 
 ## CSV 예시별 입력값 안내
 
