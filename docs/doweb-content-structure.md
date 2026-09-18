@@ -1,39 +1,20 @@
-# 우리기획 공용 API `wr_content_t` 적재 규격
+# 업체 기반 `wr_content_t` 적재 규격
 
-## 구성 순서
+## 모듈과 콘텐츠
+
+`wr_module_t`에서 담당자·프로젝트·서비스 게시판을 만들고, 각 게시판의 콘텐츠를 `wr_content_t`에 적재합니다. 업체는 콘텐츠 모듈이 아니라 `wr_company_t`에 생성합니다.
 
 ```text
-고객: idx = customer.idx
-프로젝트: parent_idx = customer.idx, idx = project.idx
-서비스: parent_idx = project.idx
+업체 생성 → 담당자/프로젝트/서비스 콘텐츠 적재
+프로젝트 생성 → 서비스.parent_idx에 프로젝트.idx 설정
 ```
 
-## 모듈별 핵심 필드
+모든 담당자·프로젝트·서비스 콘텐츠는 `company_idx`로 업체에 귀속됩니다. 서비스의 `parent_idx`는 프로젝트 귀속만 표현합니다.
 
-| 모듈 | 연결/일반 필드 | `content_raw` |
-|---|---|---|
-| 고객 | `title`, `content` | 고객명 근거·연락처 |
-| 프로젝트 | `parent_idx`, `title`, `status`, `date_start`, `date_end`, `tags`, `content` | 서비스ID |
-| 서비스 | `parent_idx`, `type`, `url`, `tags`, `content`, `receiver_idx` | 고객 연락처·접속정보 |
+## 데이터 보관
 
-## 필드 사용 기준
-
-- 프로젝트 `date_start`에는 개설일을, `date_end`에는 종료일 원본 또는 `2999-12-31`을 저장합니다.
-- 서비스 `type`에는 `구분 (개발/운영)`을 저장합니다.
-- 서비스 `url`에는 `도메인주소, 호스팅주소`를 쉼표로 구분해 저장합니다.
-- 공용·관계 필드에 저장한 값은 `content_raw`에 넣지 않습니다.
-
-## 서비스 `content_raw` 형태
-
-```json
-{
-  "source": {"customer_contact":"O열 고객연락처", "customer_email":"P열 고객이메일"},
-  "access": {
-    "hosting":{"id":"H열","password":"I열"},
-    "admin":{"id":"J열","password":"K열"},
-    "database":{"url":"L열","id":"M열","password":"N열"}
-  }
-}
-```
-
-도메인주소, 호스팅주소, 구분 (개발/운영), 운영상태, 날짜, 제목, 카테고리, 태그, 메모, 작업자 연결값은 이 JSON에 넣지 않습니다.
+- 일반 필드: 제목, 상태, 기간, 구분, URL, 태그, 관계값
+- `content_raw`: 검색 불필요하거나 보호가 필요한 JSON 값
+- 서비스 접속정보: `content_raw.accounts[]`
+- 서비스 `is_hidden`: `1`
+- 외부 담당자: 담당자 모듈의 `name`, `contact`, `email`; `receiver_idx`와 구분
