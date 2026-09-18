@@ -84,6 +84,29 @@ company.idx ── company_idx ── 담당자
 project.idx ── parent_idx ── 서비스
 ```
 
+## 서비스 관리대장 정제본 활용 범위
+
+`ubot_db` 인계본의 `company`, `site`, `service`, `service_url`, `contact`, `credential`, `access_check`, `project`은 서비스 메인 통합본을 정제·검증하기 위한 **중간 모델**이다. 이는 우리기획 운영 DB에 새 테이블로 추가하는 대상이 아니다.
+
+실제 우리기획 적재 대상은 계속 아래 네 CSV이며, `wr_company_t`와 세 종류의 `wr_content_t` 콘텐츠만 사용한다.
+
+| 정제본 데이터 | 우리기획 적재 위치 | 입력 원칙 |
+|---|---|---|
+| `company` | `company.csv` → `wr_company_t` | 대표 업체, `merged_into`·`migrate` 판단을 반영한다. |
+| `contact` | `contact_module.csv` → 담당자 `wr_content_t` | `company_idx`를 유지하고 고객/서브 담당자로 적재한다. |
+| `project` | `project_module.csv` → 프로젝트 `wr_content_t` | 업체 귀속 프로젝트로 적재한다. |
+| `service` + `site` | `service_module.csv` → 서비스 `wr_content_t` | 서비스 기본값·기간·상태는 일반 필드에 적재한다. |
+| `service_url` | 서비스 `url`, `tags`, `content_raw.urls[]` | 실제 주소·호스팅 주소·관리도구 주소를 역할과 함께 보존한다. |
+| `credential` | 서비스 `content_raw.accounts[]` | 민감정보이므로 `is_hidden=1`; GitHub·일반 문서에는 실제 값을 기록하지 않는다. |
+| `access_check` | 서비스 `content_raw.access_check` | VPN·호스트키·사전점검 값은 구조화된 JSON으로 보존한다. |
+
+### 적재 전 적용 규칙
+
+- `migrate=0` 또는 업체가 `merged_into`를 가진 항목은 자동 적재하지 않고 검토 대상으로 남긴다.
+- 봇 실행 후보는 서비스 상태만으로 고르지 않는다. `migrate=1`, 병합되지 않은 업체, `live_status=live/redirect`, 접속 사전점검을 함께 확인한다.
+- `site`는 도메인/배포 이력을 정리하기 위한 중간 식별자다. 우리기획 구조에는 별도 사이트 테이블이 없으므로 서비스 콘텐츠의 URL·태그·`content_raw`로 투영한다.
+- 모든 신규 `idx`는 UUID v7으로 생성한다. 기존 담당자·프로젝트·서비스의 `module_idx`는 아래 고정 모듈 ID를 그대로 쓴다.
+
 
 ## CSV 예시별 입력값 안내
 
