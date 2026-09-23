@@ -1,2 +1,2 @@
-idx,company_name,company_number,company_phone,company_email,company_manager_name,company_manager_phone,company_manager_email,company_address,company_address_2,company_extras,tags,admin_idx
-company-001,예시 업체,"","","","","","","","","","",""
+﻿idx,company_name,company_number,company_phone,company_email,company_manager_name,company_manager_phone,company_manager_email,company_address,company_address_2,company_extras,tags,admin_idx
+01900000-0000-7000-8000-000000000001,예시 업체,,,,,,,,,,,

@@ -1,3 +1,13 @@
+---
+id: spec-import-csv
+title: 이관 CSV 필드 명세
+category: spec
+summary: 적재용 CSV 4개(company, contact_module, project_module, service_module)의 헤더 순서, 필드별 형식·필수 여부·허용값, content_raw.accounts JSON 규칙(host는 FTP 전용), 인계본 → CSV 대응, 적재 전 검증 체크리스트 11항목을 정의하는 기준 문서.
+keywords: [CSV, 필드 명세, wr_company_t, wr_content_t, company_idx, parent_idx, module_idx, status, type, date_end, url, content_raw, accounts, host, FTP, DB_iwinv, is_hidden, UUID v7, 검증 체크리스트, 인계본]
+related_files: [scripts/build_import_csv.py, examples/company_example.csv, examples/contact_module_example.csv, examples/project_module_example.csv, examples/service_module_example.csv]
+last_updated: 2026-09-23
+---
+
 # 우리기획 서비스 이관 CSV 필드 명세
 
 > **목적**: 서비스 메인 통합본에서 정리한 데이터를 우리기획 DB의 `wr_company_t`와 세 종류의 `wr_content_t` 콘텐츠로 안전하게 적재한다.
@@ -29,13 +39,14 @@
 
 정제 인계본에서 이미 검토된 다음 항목만 CSV에 포함한다.
 
-```text
-migrate = 1
-AND company.merged_into 가 비어 있음
-AND 해당 업체에 연결된 사이트·서비스·프로젝트
-```
+| CSV | 포함 조건 |
+|---|---|
+| `company.csv` | `migrate=1` 이고 `merged_into`가 비어 있는 업체 |
+| `service_module.csv` | `migrate=1`, `is_current=1`(현행 배포), 소속 업체가 위 조건을 만족 |
+| `project_module.csv` | 포함된 서비스의 `parent_idx`가 가리키는 프로젝트 |
+| `contact_module.csv` | 소속 업체가 위 조건을 만족하는 담당자 |
 
-`migrate=0` 또는 병합 대상 업체는 자동 적재하지 않는다.
+`migrate=0` 또는 병합 대상 업체는 자동 적재하지 않는다. 과거 배포 이력(`is_current=0`)은 스크립트의 `--include-history`로만 포함한다.
 
 ---
 
@@ -73,7 +84,7 @@ AND 해당 업체에 연결된 사이트·서비스·프로젝트
 
 ---
 
-# 4. `company.csv` — 업체 (`wr_company_t`)
+## 4. `company.csv` — 업체 (`wr_company_t`)
 
 **역할**: 회사의 기준 레코드다. 담당자·프로젝트·서비스의 `company_idx`는 이 파일의 `idx`를 참조한다.
 
@@ -97,7 +108,7 @@ AND 해당 업체에 연결된 사이트·서비스·프로젝트
 
 ---
 
-# 5. `contact_module.csv` — 담당자 콘텐츠
+## 5. `contact_module.csv` — 담당자 콘텐츠
 
 **역할**: 고객사 외부 담당자와 서브 담당자의 연락처를 저장한다. 내부 작업자·회원 ID를 저장하는 곳이 아니다.
 
@@ -113,7 +124,7 @@ AND 해당 업체에 연결된 사이트·서비스·프로젝트
 
 ---
 
-# 6. `project_module.csv` — 프로젝트 콘텐츠
+## 6. `project_module.csv` — 프로젝트 콘텐츠
 
 **역할**: 서비스의 상위 프로젝트를 저장한다. 한 서비스는 반드시 하나의 프로젝트 `idx`를 `parent_idx`로 참조한다.
 
@@ -137,7 +148,7 @@ AND 해당 업체에 연결된 사이트·서비스·프로젝트
 
 ---
 
-# 7. `service_module.csv` — 서비스 콘텐츠
+## 7. `service_module.csv` — 서비스 콘텐츠
 
 **역할**: 실제 운영·테스트 서비스다. 실제 서비스 도메인은 일반 `url` 열에 넣고, 계정 정보는 `content_raw.accounts`에 넣는다. 호스팅 주소는 FTP 계정의 `host`에 둔다.
 
@@ -161,7 +172,7 @@ AND 해당 업체에 연결된 사이트·서비스·프로젝트
 
 ---
 
-# 8. `content_raw.accounts` JSON 명세
+## 8. `content_raw.accounts` JSON 명세
 
 `content_raw`는 **계정 정보 전용**이다.
 
@@ -170,7 +181,7 @@ AND 해당 업체에 연결된 사이트·서비스·프로젝트
 - `{}`는 사용하지 않음
 - `urls`, `access_check`, `status`, `type`, `risk_flags`, 사이트·프로젝트 메모는 넣지 않음
 
-## 허용 JSON 예시
+### 허용 JSON 예시
 
 ```json
 {
@@ -196,7 +207,7 @@ AND 해당 업체에 연결된 사이트·서비스·프로젝트
 }
 ```
 
-## `accounts[]` 필드 상세
+### `accounts[]` 필드 상세
 
 | JSON 경로 | 형식 | 필수 | 허용값/제한 | 설명 |
 |---|---|:---:|---|---|
@@ -213,7 +224,7 @@ AND 해당 업체에 연결된 사이트·서비스·프로젝트
 
 ---
 
-# 9. 적재 전 검증 체크리스트
+## 9. 적재 전 검증 체크리스트
 
 1. CSV가 정확히 4개인지 확인한다.
 2. 각 파일의 헤더 순서가 이 명세와 같은지 확인한다.
@@ -226,3 +237,19 @@ AND 해당 업체에 연결된 사이트·서비스·프로젝트
 9. `content_raw`의 최상위 키가 `accounts`뿐인지 확인한다.
 10. 모든 계정 객체의 키가 `type`, `host`, `id`, `pw`, `url`만으로 구성됐는지 확인한다.
 11. `host`가 FTP 계정에만 있고, 한 서비스의 FTP `host`가 모두 같으며, 그 값이 서비스 `url`에 들어 있지 않은지 확인한다.
+
+---
+
+## 10. 인계본 → CSV 대응
+
+`ubot_db` 인계본의 테이블은 정제·검증용 **중간 모델**이며 우리기획 DB에 새 테이블로 만들지 않는다. 각 테이블은 아래처럼 CSV 필드로만 투영한다.
+
+| 인계본 | CSV 위치 | 규칙 |
+|---|---|---|
+| `company` | `company.csv` | `idx`, `company_name`만. `migrate`·`merged_into`로 대상 선택 |
+| `contact` | `contact_module.csv` | `name`, `contact`(`phone`, `phone_2`를 `, `로 연결), `email`. `company_idx`는 병합 후 대표 업체 |
+| `project` | `project_module.csv` | `title`, `status`, `date_start`, `date_end`. `type=0` |
+| `service` | `service_module.csv` | `title`, `status`, `date_start`, `date_end`, `type`(`service_type`), `parent_idx`(`project_idx`) |
+| `service_url` | 서비스 `url`, FTP `host` | `url_role=service` → 서비스 `url`. `hosting`(없으면 `server_ip`) → FTP 계정 `host`. `repo`·`admin_tool`·`external`은 쓰지 않음 |
+| `credential` | 서비스 `content_raw.accounts[]` | `account_type` → `type`(iwinv 관리 URL을 가진 DB는 `DB_iwinv`), `account_id` → `id`, `password` → `pw`, `extra_url` → `url` |
+| `site`, `access_check`, 정제 메모 | 투영하지 않음 | 인계본에만 남긴다 |
