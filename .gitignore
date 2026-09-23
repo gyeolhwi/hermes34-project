@@ -1,3 +1,5 @@
+# 실데이터 적재용 CSV — 실제 연락처·평문 계정 포함, 커밋 금지
+data/
 
 # issue-* workspace — evidence only stays committed so issue comments render
 .issue/**
