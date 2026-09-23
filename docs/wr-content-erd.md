@@ -1,79 +1,20 @@
-# `wr_content_t` 3모듈 ERD와 필드 구조
+# 업체 기반 `wr_content_t` 적재 규격
 
-고객·프로젝트·서비스는 별도 테이블이 아닌 `module_idx`가 다른 `wr_content_t` 행입니다.
+## 모듈과 콘텐츠
 
-```mermaid
-erDiagram
-    CUSTOMER_MODULE ||--o{ PROJECT_MODULE : "project.parent_idx = customer.idx"
-    PROJECT_MODULE ||--o{ SERVICE_MODULE : "service.parent_idx = project.idx"
-    MEMBER ||--o{ SERVICE_MODULE : "site.receiver_idx = member.idx"
-    CUSTOMER_MODULE {
-      string idx PK "wr_content_t.idx"
-      string module_idx "고객 모듈"
-      string title "고객명"
-      string content_raw "customer{name_source}; contact[]"
-      string content "고객 메모"
-    }
-    PROJECT_MODULE { string parent_idx FK
-                     string status
-                     string date_start
-                     string date_end }
-    SERVICE_MODULE { string parent_idx FK
-                  string type
-                  string url }
+`wr_module_t`에서 담당자·프로젝트·서비스 게시판을 만들고, 각 게시판의 콘텐츠를 `wr_content_t`에 적재합니다. 업체는 콘텐츠 모듈이 아니라 `wr_company_t`에 생성합니다.
+
+```text
+업체 생성 → 담당자/프로젝트/서비스 콘텐츠 적재
+프로젝트 생성 → 서비스.parent_idx에 프로젝트.idx 설정
 ```
 
-## 공통 필드 사용
+모든 담당자·프로젝트·서비스 콘텐츠는 `company_idx`로 업체에 귀속됩니다. 서비스의 `parent_idx`는 프로젝트 귀속만 표현합니다.
 
-| 필드 | 고객 | 프로젝트 | 서비스 |
-|---|---|---|---|
-| `parent_idx` | — | 고객 `idx` | 프로젝트 `idx` |
-| `title` | 고객명 | 서비스명 | 필요 시 표시명 |
-| `status` | — | 운영상태 | — |
-| `date_start` | — | 개설일 | — |
-| `date_end` | — | 종료일 또는 `2999-12-31` | — |
-| `type` | — | — | 구분 (개발/운영) |
-| `url` | — | — | `도메인주소, 호스팅주소` |
-| `tags` | — | 카테고리 | 도메인·호스팅·프레임워크 |
-| `receiver_idx` | — | — | 담당 member `idx` |
-| `content` | 고객 메모 | 프로젝트 메모 | 검수메모·비고 |
+## 데이터 보관
 
-## `content_raw` 기준
-
-공용·관계 필드와 같은 의미의 키를 넣지 않습니다.
-
-| 모듈 | 보존값 |
-|---|---|
-| 고객 | 고객명 매핑 근거, 담당자 연락처 배열 |
-| 프로젝트 | 원본 서비스ID |
-| 서비스 | 고객 연락처·이메일 원문, 접속·DB 정보 |
-
-### 프로젝트 예시
-
-```json
-{"source":{"service_id":"SVC-201"}}
-```
-
-`title`, `status`, `date_start`, `date_end`, `tags`는 공용 필드에 저장합니다.
-
-### 서비스 예시
-
-```json
-{
-  "source": {"customer_contact":"원본 고객연락처", "customer_email":"원본 고객이메일"},
-  "access": {
-    "hosting":{"id":"H열","password":"I열"},
-    "admin":{"id":"J열","password":"K열"},
-    "database":{"url":"L열","id":"M열","password":"N열"}
-  }
-}
-```
-
-서비스의 `type`은 `구분 (개발/운영)`, `url`은 `도메인주소, 호스팅주소` 형식의 공용 필드입니다.
-
-## 적재 순서
-
-1. 고객 행 생성 후 `customer.idx`를 받습니다.
-2. 프로젝트 `parent_idx`에 고객 `idx`를 설정하고, `date_end`는 종료일 원본 또는 `2999-12-31`로 설정합니다.
-3. 서비스 `parent_idx`에 프로젝트 `idx`를 설정하고 `type`, `url`을 공용 필드에 넣습니다.
-4. `content_raw` JSON과 관계값을 검증합니다.
+- 일반 필드: 제목, 상태, 기간, 구분, URL, 태그, 관계값
+- `content_raw`: 검색 불필요하거나 보호가 필요한 JSON 값
+- 서비스 접속정보: `content_raw.accounts[]`
+- 서비스 `is_hidden`: `1`
+- 외부 담당자: 담당자 모듈의 `name`, `contact`, `email`; `receiver_idx`와 구분

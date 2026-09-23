@@ -2,19 +2,41 @@
 
 ## 핵심
 
-Hermes34는 물리적으로 **`wr_content_t` 한 테이블**을 사용합니다. 고객·프로젝트·서비스는 같은 행을 `module_idx`로 구분한 논리 모듈입니다. 원본 서비스 시트의 한 행은 세 모듈 행으로 나누어 적재하며, 공용 필드에 저장한 값은 `content_raw`에 다시 넣지 않습니다.
+업체는 `wr_company_t`에서 관리합니다. 담당자·프로젝트·서비스는 `wr_module_t`에서 생성한 게시판(모듈)이며, 각 데이터는 `wr_content_t`에 저장합니다.
 
-## 문서
+```text
+wr_company_t (업체)
+ ├─ wr_content_t: 담당자 모듈
+ ├─ wr_content_t: 프로젝트 모듈
+ └─ wr_content_t: 서비스 모듈
+       └─ parent_idx → 프로젝트 콘텐츠
+```
 
-1. [3모듈 ERD와 필드 구조](docs/wr-content-erd.md)
-2. [서비스 시트 → 3모듈 매핑](docs/service-sheet-api-field-mapping.md)
-3. [원본 시트·3모듈 정합성 점검](docs/data-integrity-check.md)
-4. [공용 API 적재 규격](docs/doweb-content-structure.md)
+각 콘텐츠의 `company_idx`는 소속 업체를 가리킵니다. 서비스의 `parent_idx`는 프로젝트 귀속 관계이며, 업체 귀속과 별개입니다.
+
+## 모듈 ID
+
+| 모듈 | `wr_module_t.idx` |
+|---|---|
+| 담당자 | `01a05700-8c1d-7cd4-8b2d-fac77f865a9f` |
+| 프로젝트 | `01a05701-ed99-7cfa-841e-ec6f6c9922a0` |
+| 서비스 | `01a05702-067e-729b-85ab-deb5b0836082` |
 
 ## 공통 원칙
 
-- 고객 → 프로젝트와 프로젝트 → 서비스 연결은 자식 행의 `parent_idx`를 사용합니다.
-- 프로젝트에는 운영상태와 기간을 `status`, `date_start`, `date_end`로 저장합니다. 종료일 원본이 없으면 `date_end=2999-12-31`을 사용합니다.
-- 서비스에는 `구분 (개발/운영)`을 `type`으로 저장하고, 도메인주소와 호스팅주소를 `url`에 쉼표로 구분해 저장합니다.
-- `content_raw`는 공용/관계 필드에 없는 원본 식별값, 다중값, 접속정보만 JSON 문자열로 저장합니다.
-- `tags`는 검색용 짧은 분류만, `content`는 사람이 읽는 검수메모·비고만 저장합니다.
+- `module_idx`에는 모듈 이름이 아니라 위 `wr_module_t.idx`를 저장합니다.
+- `company_idx`에는 소속 `wr_company_t.idx`를 저장합니다.
+- 검색·관계·상태·기간에 필요한 값은 일반 필드에 저장합니다.
+- `content_raw`에는 검색이 불필요하거나 보호가 필요한 원본값만 JSON으로 저장합니다. 서비스의 접속·DB 계정은 여기에 보관합니다.
+- 서비스는 `is_hidden=1`로 설정하여 이 배포 환경의 민감 데이터 보호 처리를 적용합니다.
+- 외부 고객 담당자는 담당자 모듈로 관리하며, `receiver_idx`는 담당자 관계의 기준이 아닙니다.
+
+## 문서
+
+1. [업체·모듈 필드표](docs/wr-content-module-fields.md)
+2. [관계 및 적재 규격](docs/doweb-content-structure.md)
+3. [정합성 점검](docs/data-integrity-check.md)
+4. [업체 CSV 예시](examples/company_example.csv)
+5. [담당자 CSV 예시](examples/contact_module_example.csv)
+6. [프로젝트 CSV 예시](examples/project_module_example.csv)
+7. [서비스 CSV 예시](examples/service_module_example.csv)

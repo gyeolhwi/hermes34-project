@@ -1,0 +1,2 @@
+idx,module_idx,ref_idx,company_idx,title,status,date_start,date_end,type,url,tags,receiver_idx,is_hidden,content_raw,content
+project-content-001,01a05701-ed99-7cfa-841e-ec6f6c9922a0,"",company-001,예시 프로젝트,1,2024-05-20,2999-12-31,0,"","","","","{""source"":{""service_id"":""SVC-001""}}",프로젝트 메모
