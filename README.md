@@ -40,3 +40,18 @@ wr_company_t (업체)
 5. [담당자 CSV 예시](examples/contact_module_example.csv)
 6. [프로젝트 CSV 예시](examples/project_module_example.csv)
 7. [서비스 CSV 예시](examples/service_module_example.csv)
+8. [이관 CSV 필드 명세](docs/wr-import-field-spec.md)
+
+## 실데이터 적재용 CSV 만들기
+
+ubot 정제 인계본(`인계/data/`)을 [이관 CSV 필드 명세](docs/wr-import-field-spec.md)에 맞춰 4개 CSV로 변환합니다.
+
+```bash
+python3 scripts/build_import_csv.py --src "<ubot>/ubot db 구조화/인계/data"
+```
+
+- 출력: `data/import/` (`--out`으로 변경). `data/`는 `.gitignore`로 제외합니다. **실제 연락처와 평문 계정이 들어 있으므로 커밋하거나 공유하지 않습니다.**
+- 대상: `migrate=1`이면서 병합되지 않은 업체, 그 업체의 담당자, 현행(`is_current=1`) 서비스와 그 상위 프로젝트입니다. 과거 배포 이력까지 넣으려면 `--include-history`를 붙입니다.
+- 명세 9장의 적재 전 체크리스트를 자동으로 검증하며, 하나라도 실패하면 CSV를 쓰지 않고 종료 코드 1을 돌려줍니다.
+
+적재 순서는 `company.csv`(`wr_company_t`) → `contact_module.csv`, `project_module.csv` → `service_module.csv`입니다. 서비스는 `parent_idx`가 가리키는 프로젝트가 먼저 있어야 합니다.
