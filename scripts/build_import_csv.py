@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ubot 정제 인계본을 우리기획 적재용 CSV 4개로 투영한다.
 
-규격: docs/wr-import-field-spec.md
+규격: docs/spec/import-csv-spec.md
 입력: ubot 인계 패키지의 data/ 폴더 (company, contact, project, service,
       service_url, credential CSV)
 출력: company.csv, contact_module.csv, project_module.csv, service_module.csv
@@ -161,7 +161,7 @@ def build(src, include_history):
 
 
 def validate(company_rows, contact_rows, project_rows, service_rows):
-    """docs/wr-import-field-spec.md 9장 체크리스트. 실패 메시지 목록을 돌려준다."""
+    """docs/spec/import-csv-spec.md 9장 체크리스트. 실패 메시지 목록을 돌려준다."""
     errors = []
     company_ids = {r["idx"] for r in company_rows}
     project_ids = {r["idx"] for r in project_rows}
