@@ -36,7 +36,7 @@ SERVICE_FIELDS = [
     "date_end", "type", "url", "tags", "receiver_idx", "is_hidden", "content_raw", "content",
 ]
 
-# 서비스 url 은 실제 서비스 도메인만, 호스팅 주소는 계정의 host 로 보낸다.
+# 서비스 url 은 실제 서비스 도메인만, 호스팅 주소는 FTP 계정의 host 로 보낸다.
 # repo·admin_tool·external 은 어느 쪽에도 넣지 않는다.
 SERVICE_URL_ROLES = ["service"]
 HOST_ROLES = ["hosting", "server_ip"]
@@ -84,6 +84,8 @@ def account(cred, host):
     if kind == "DB" and "iwinv" in url.lower():
         kind = "DB_iwinv"
     acc = {"type": kind}
+    if kind != "FTP":
+        host = ""
     for key, value in (("host", host), ("url", url), ("id", cred["account_id"]), ("pw", cred["password"])):
         if value:
             acc[key] = value
@@ -227,10 +229,12 @@ def validate(company_rows, contact_rows, project_rows, service_rows):
         for acc in raw["accounts"]:
             if set(acc) - ACCOUNT_KEYS or acc.get("type") not in ACCOUNT_TYPES:
                 errors.append(f"service_module: 계정 키/종류 {r['idx']}")
-        hosts = {acc.get("host") for acc in raw["accounts"]}
+        if any("host" in acc and acc["type"] != "FTP" for acc in raw["accounts"]):
+            errors.append(f"service_module: FTP 외 계정에 host {r['idx']}")
+        hosts = {acc.get("host") for acc in raw["accounts"] if acc["type"] == "FTP"}
         if len(hosts) > 1:
-            errors.append(f"service_module: 계정마다 host 다름 {r['idx']}")
-        if hosts & set(r["url"].split(",")) - {None}:
+            errors.append(f"service_module: FTP 계정마다 host 다름 {r['idx']}")
+        if hosts & set(r["url"].split(",")):
             errors.append(f"service_module: 호스팅 주소가 url 에 남음 {r['idx']}")
     return errors
 
