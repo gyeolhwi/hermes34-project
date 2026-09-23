@@ -67,11 +67,11 @@
 | `status` | `1=운영`, `-1=비운영`, `0=값 없음/unknown` |
 | `date_start`, `date_end` | 서비스 시작일·종료일 |
 | `type` | `1=운영`, `2=개발`, `3=샘플`, `0=값 없음/unknown` |
-| `url` | `도메인주소,호스팅주소` 형식 |
+| `url` | 실제 서비스 도메인. 호스팅 주소는 `content_raw.accounts[].host` |
 | `tags` | 호스팅·프레임워크·카테고리 검색 태그 |
 | `receiver_idx` | 현재 비어 있음; 외부 담당자는 담당자 모듈에서 관리 |
 | `is_hidden` | 서비스 민감 데이터 보호를 위해 `1` |
-| `content_raw` | **`accounts`만** 저장하는 민감 JSON. 계정마다 `type`, 필요 시 `url`, `id`, `pw`만 둔다. URL 목록·접속점검·상태·기간 등 다른 서비스 정보는 넣지 않는다. |
+| `content_raw` | **`accounts`만** 저장하는 민감 JSON. 계정마다 `type`, 필요 시 `host`(호스팅 주소), `url`, `id`, `pw`만 둔다. URL 목록·접속점검·상태·기간 등 다른 서비스 정보는 넣지 않는다. |
 | `content` | 서비스 메모 |
 
 ## 관계
@@ -96,8 +96,8 @@ project.idx ── parent_idx ── 서비스
 | `contact` | `contact_module.csv` → 담당자 `wr_content_t` | `company_idx`를 유지하고 고객/서브 담당자로 적재한다. |
 | `project` | `project_module.csv` → 프로젝트 `wr_content_t` | 업체 귀속 프로젝트로 적재한다. |
 | `service` + `site` | `service_module.csv` → 서비스 `wr_content_t` | 서비스 기본값·기간·상태는 일반 필드에 적재한다. |
-| `service_url` | 서비스 `url` | 실제 서비스·호스팅 주소만 일반 서비스 필드로 보존한다. |
-| `credential` | 서비스 `content_raw.accounts[]` | 민감정보이므로 `is_hidden=1`; 각 계정에는 `type`, 필요 시 `url`, `id`, `pw`만 둔다. GitHub·일반 문서에는 실제 값을 기록하지 않는다. |
+| `service_url` | 서비스 `url`, `accounts[].host` | 실제 서비스 도메인은 서비스 `url`에, 호스팅 주소는 계정의 `host`에 둔다. |
+| `credential` | 서비스 `content_raw.accounts[]` | 민감정보이므로 `is_hidden=1`; 각 계정에는 `type`, 필요 시 `host`, `url`, `id`, `pw`만 둔다. GitHub·일반 문서에는 실제 값을 기록하지 않는다. |
 | `access_check` | 정제 인계본에 유지 | 우리기획 현재 콘텐츠 필드에는 투영하지 않는다. |
 
 ### 적재 전 적용 규칙
@@ -178,7 +178,7 @@ project.idx ── parent_idx ── 서비스
 | `status` | `1` | `1=운영`, `-1=비운영` |
 | `date_start`, `date_end` | `2024-05-20`, `2999-12-31` | 실제 서비스 기간 (`YYYY-MM-DD`) |
 | `type` | `1` | `1=운영`, `2=개발`, `3=샘플` |
-| `url` | `https://service.example.test,https://host.example.test` | 도메인주소와 호스팅주소를 쉼표로 구분 |
+| `url` | `https://service.example.test` | 실제 서비스 도메인; 호스팅 주소는 `accounts[].host` |
 | `tags` | `hosting_example frame_example cat_example` | 검색용 호스팅·프레임워크·카테고리 태그 |
 | `receiver_idx` | 빈 값 | 내부 member 지정 시만 입력; 외부 고객 담당자는 담당자 모듈 사용 |
 | `is_hidden` | `1` | 민감 접속정보를 보관하는 서비스는 반드시 `1` |
