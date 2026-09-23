@@ -36,10 +36,12 @@ SERVICE_FIELDS = [
     "date_end", "type", "url", "tags", "receiver_idx", "is_hidden", "content_raw", "content",
 ]
 
-# 서비스 url 에 넣는 주소 종류와 순서. repo·admin_tool·external 은 서비스 주소가 아니다.
-URL_ROLES = ["service", "hosting", "server_ip"]
+# 서비스 url 은 실제 서비스 도메인만, 호스팅 주소는 계정의 host 로 보낸다.
+# repo·admin_tool·external 은 어느 쪽에도 넣지 않는다.
+SERVICE_URL_ROLES = ["service"]
+HOST_ROLES = ["hosting", "server_ip"]
 ACCOUNT_TYPES = {"FTP", "DB_iwinv", "DB", "admin"}
-ACCOUNT_KEYS = {"type", "id", "pw", "url"}
+ACCOUNT_KEYS = {"type", "host", "id", "pw", "url"}
 UUID_V7 = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$")
 DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 
@@ -63,13 +65,26 @@ def code(value):
     return "0" if value in ("", "unknown") else value
 
 
-def account(cred):
+def ordered_urls(urls, roles):
+    """roles 순서 → 대표 주소 → seq 순으로 정렬하고 중복을 뺀다."""
+    picked = sorted(
+        (u for u in urls if u["url_role"] in roles),
+        key=lambda u: (roles.index(u["url_role"]), u["is_primary"] != "1", int(u["seq"] or 0)),
+    )
+    seen = []
+    for u in picked:
+        if u["url"] not in seen:
+            seen.append(u["url"])
+    return seen
+
+
+def account(cred, host):
     kind = cred["account_type"]
     url = cred["extra_url"].strip()
     if kind == "DB" and "iwinv" in url.lower():
         kind = "DB_iwinv"
     acc = {"type": kind}
-    for key, value in (("url", url), ("id", cred["account_id"]), ("pw", cred["password"])):
+    for key, value in (("host", host), ("url", url), ("id", cred["account_id"]), ("pw", cred["password"])):
         if value:
             acc[key] = value
     return acc
@@ -91,11 +106,10 @@ def build(src, include_history):
 
     urls = defaultdict(list)
     for u in read(src, "service_url.csv"):
-        if u["url_role"] in URL_ROLES:
-            urls[u["service_idx"]].append(u)
-    accounts = defaultdict(list)
+        urls[u["service_idx"]].append(u)
+    creds = defaultdict(list)
     for cred in read(src, "credential.csv"):
-        accounts[cred["service_idx"]].append(account(cred))
+        creds[cred["service_idx"]].append(cred)
 
     company_rows = [{"idx": c["idx"], "company_name": c["company_name"]} for c in live.values()]
     contact_rows = [
@@ -124,15 +138,9 @@ def build(src, include_history):
     ]
     service_rows = []
     for s in services:
-        ordered = sorted(
-            urls[s["idx"]],
-            key=lambda u: (URL_ROLES.index(u["url_role"]), u["is_primary"] != "1", int(u["seq"] or 0)),
-        )
-        seen = []
-        for u in ordered:
-            if u["url"] not in seen:
-                seen.append(u["url"])
-        accs = accounts[s["idx"]]
+        hosts = ordered_urls(urls[s["idx"]], HOST_ROLES)
+        host = hosts[0] if hosts else ""
+        accs = [account(cred, host) for cred in creds[s["idx"]]]
         service_rows.append({
             "idx": s["idx"],
             "module_idx": MODULE_SERVICE,
@@ -143,7 +151,7 @@ def build(src, include_history):
             "date_start": s["date_start"],
             "date_end": s["date_end"],
             "type": code(s["service_type"]),
-            "url": ",".join(seen),
+            "url": ",".join(ordered_urls(urls[s["idx"]], SERVICE_URL_ROLES)),
             "is_hidden": "1",
             "content_raw": json.dumps({"accounts": accs}, ensure_ascii=False) if accs else "",
         })
@@ -219,6 +227,11 @@ def validate(company_rows, contact_rows, project_rows, service_rows):
         for acc in raw["accounts"]:
             if set(acc) - ACCOUNT_KEYS or acc.get("type") not in ACCOUNT_TYPES:
                 errors.append(f"service_module: 계정 키/종류 {r['idx']}")
+        hosts = {acc.get("host") for acc in raw["accounts"]}
+        if len(hosts) > 1:
+            errors.append(f"service_module: 계정마다 host 다름 {r['idx']}")
+        if hosts & set(r["url"].split(",")) - {None}:
+            errors.append(f"service_module: 호스팅 주소가 url 에 남음 {r['idx']}")
     return errors
 
 

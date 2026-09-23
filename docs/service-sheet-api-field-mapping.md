@@ -7,4 +7,4 @@
 | 프로젝트 | `company_idx=업체.idx` | `title`, `status`, `date_start`, `date_end`, `ref_idx` |
 | 서비스 | `company_idx=업체.idx`, `parent_idx=프로젝트.idx` | `title`, `status`, `type`, `url`, `tags`, `is_hidden=1` |
 
-서비스 URL은 `도메인주소,호스팅주소`로 저장하고, 서비스 접속·DB 정보는 `content_raw.accounts[]`에 보관합니다. 실제 비밀번호나 고객 연락처를 문서 예시로 복사하지 않습니다.
+서비스 URL에는 실제 서비스 도메인만 저장하고, 호스팅 주소와 서비스 접속·DB 정보는 `content_raw.accounts[]`(`host`, `id`, `pw` 등)에 보관합니다. 실제 비밀번호나 고객 연락처를 문서 예시로 복사하지 않습니다.
