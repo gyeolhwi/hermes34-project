@@ -1,0 +1,5 @@
+$ ls scripts/
+build_import_csv.py
+post_projects.py
+
+# 전송 가능한 모듈: project 만 (post_projects.py)
