@@ -1,0 +1,16 @@
+# 로컬 목 서버(http://127.0.0.1:8765) — 2번째 요청마다 400을 돌려주도록 설정
+$ WOORI_API_KEY=test-key python3 scripts/post_projects.py --base-url http://127.0.0.1:8765 --only <전북CBS idx> --send  (2회)
+[1/1] OK  201 01a0a458-8eeb-73ba-8763-13ec407c10df 전북CBS
+
+전송 1건 / 성공 1 / 실패 0
+exit=0
+[1/1] ERR 400 01a0a458-8eeb-73ba-8763-13ec407c10df 전북CBS
+    {"ok": false}
+
+전송 1건 / 성공 0 / 실패 1
+실패 idx (재시도: --only <idx>):
+  01a0a458-8eeb-73ba-8763-13ec407c10df
+exit=1
+
+# 목 서버가 받은 요청 (헤더·본문)
+MOCK /contents x-key=test-key ct=application/json accept=application/json body={"idx": "01a0a458-8eeb-73ba-8763-13ec407c10df", "module_idx": "01a05701-ed99-7cfa-841e-ec6f6c9922a0", "company_idx": "01a0a458-8eeb-73b9-b62a-46c67865f265", "title": "전북CBS", "status": 1, "date_start": "2022-12-19T15:00:00"}

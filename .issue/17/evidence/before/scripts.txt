@@ -1,0 +1,4 @@
+$ ls scripts/
+build_import_csv.py
+$ python3 scripts/post_projects.py
+/opt/homebrew/Cellar/python@3.13/3.13.3/Frameworks/Python.framework/Versions/3.13/Resources/Python.app/Contents/MacOS/Python: can't open file '/Users/gimgyeolhwi/Documents/dev/personal-projects/hermes34-project/.issue/worktrees/17-post-projects-api/scripts/post_projects.py': [Errno 2] No such file or directory

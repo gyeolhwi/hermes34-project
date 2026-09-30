@@ -1,0 +1,8 @@
+$ python3 scripts/post_projects.py --only 01a0a458-8eeb-73ba-8763-13ec407c10df
+dry-run: 1건. 전송하려면 --send
+{"idx": "01a0a458-8eeb-73ba-8763-13ec407c10df", "module_idx": "01a05701-ed99-7cfa-841e-ec6f6c9922a0", "company_idx": "01a0a458-8eeb-73b9-b62a-46c67865f265", "title": "전북CBS", "status": 1, "date_start": "2022-12-19T15:00:00"}
+샘플 JSON 과 일치: True
+
+$ env -u WOORI_API_KEY python3 scripts/post_projects.py --send
+API 키가 없다. WOORI_API_KEY 환경변수나 --key 로 넘긴다.
+exit=1
