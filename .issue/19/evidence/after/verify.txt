@@ -1,0 +1,38 @@
+# 1. 프로젝트 요청이 #17 스크립트와 같은지 (234건 dry-run 출력 md5)
+post_projects.py : 23215882a0addccd928116db2f0a218f
+post_contents.py : 23215882a0addccd928116db2f0a218f
+
+# 2. 담당자·서비스 dry-run 이 검수용 샘플과 같은지 (비밀번호 가림 후 비교)
+contact: 117건, 샘플 행 일치 True, contact 생략 11건, email 생략 96건
+service: 234건, 샘플 행 일치 True(키 순서 포함), date_start 생략 119건, content_raw 생략 11건, url 생략 3건
+--name-field title → ['company_idx', 'contact', 'email', 'idx', 'module_idx', 'title']
+--content-raw-as-string → content_raw 타입 str
+--skip 1건 → service 233 건
+
+# 3. 주소·키 없이 --send
+API 주소가 없다. WOORI_API_BASE_URL 환경변수나 --base-url 로 넘긴다.
+exit=1
+API 키가 없다. WOORI_API_KEY 환경변수나 --key 로 넘긴다.
+exit=1
+
+# 4. 로컬 목 서버 전송 (모듈별 2건, 결과 줄에서 idx·이름 가림)
+[1/2] OK  201 <idx> <name>
+[2/2] OK  201 <idx> <name>
+
+전송 2건 / 성공 2 / 실패 0
+exit=0
+[1/2] OK  201 <idx> <name>
+[2/2] OK  201 <idx> <name>
+
+전송 2건 / 성공 2 / 실패 0
+exit=0
+[1/2] OK  201 <idx> <name>
+[2/2] OK  201 <idx> <name>
+
+전송 2건 / 성공 2 / 실패 0
+exit=0
+# 목 서버가 받은 키 목록
+{"keys": ["idx", "module_idx", "company_idx", "name", "contact", "email"], "content_raw_type": "NoneType"}
+{"keys": ["idx", "module_idx", "company_idx", "title", "status", "date_start"], "content_raw_type": "NoneType"}
+{"keys": ["idx", "module_idx", "parent_idx", "company_idx", "title", "status", "type", "date_start", "url", "is_hidden", "content_raw"], "content_raw_type": "dict"}
+{"keys": ["idx", "module_idx", "parent_idx", "company_idx", "title", "status", "type", "date_start", "url", "is_hidden"], "content_raw_type": "NoneType"}
