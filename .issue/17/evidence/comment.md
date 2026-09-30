@@ -15,7 +15,7 @@
 - 로컬 목 서버 전송: `x-key`·`accept`·`Content-Type` 헤더와 본문이 샘플대로 도착, 201 → OK, 400 → ERR + 실패 idx 출력 + exit 1 — [after/mock-send.txt](after/mock-send.txt)
 - `git grep` 결과 저장소에 API 키 문자열 없음
 
-### 실서버 전송 결과 (woori-dev, 2026-09-30)
+### 실서버 전송 결과 (개발 서버, 2026-09-30)
 | 대상 | 건수 | 결과 |
 |---|---:|---|
 | 전북CBS | 1 | 사용자가 샘플 curl로 먼저 전송 |
