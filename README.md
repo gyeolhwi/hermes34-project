@@ -40,6 +40,7 @@ python3 scripts/build_import_csv.py --src "<ubot>/ubot db 구조화/인계/data"
 | 테이블·모듈 관계, 적재 순서 | [데이터 구조](docs/overview/structure.md) |
 | 필드별 규칙, `accounts`·`host`, 검증 체크리스트 | [이관 CSV 필드 명세](docs/spec/import-csv-spec.md) (기준 문서) |
 | 스크립트 실행·옵션·보안 | [적재용 CSV 생성 가이드](docs/guides/build-import-csv.md) |
+| 프로젝트를 API로 적재 | [프로젝트 API 적재 가이드](docs/guides/post-projects.md) |
 
 ## 폴더 구조
 
@@ -50,8 +51,11 @@ python3 scripts/build_import_csv.py --src "<ubot>/ubot db 구조화/인계/data"
 ├── docs/
 │   ├── overview/structure.md       데이터 구조
 │   ├── spec/import-csv-spec.md     CSV 필드 명세
-│   └── guides/build-import-csv.md  스크립트 가이드
+│   ├── guides/build-import-csv.md  스크립트 가이드
+│   └── guides/post-projects.md     프로젝트 API 적재 가이드
 ├── examples/                 가짜 값 예시 CSV 4개
-├── scripts/build_import_csv.py
+├── scripts/
+│   ├── build_import_csv.py   인계본 → 적재용 CSV
+│   └── post_projects.py      프로젝트 CSV → POST /contents
 └── data/                     (git 제외) 생성된 실데이터 CSV
 ```

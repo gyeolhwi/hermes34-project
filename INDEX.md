@@ -10,6 +10,7 @@
 | 테이블·모듈 관계, 모듈 ID, 적재 순서 | `docs/overview/structure.md` |
 | 특정 필드의 형식·허용값, `accounts`/`host`, 검증 규칙, 인계본 대응 | `docs/spec/import-csv-spec.md` |
 | 스크립트 실행, 옵션, 건수, 검증 실패, 보안 | `docs/guides/build-import-csv.md` |
+| 프로젝트를 API(`POST /contents`)로 적재, x-key, date_start 변환 | `docs/guides/post-projects.md` |
 
 ## 문서 목록
 
@@ -31,6 +32,12 @@
   category: guide
   summary: scripts/build_import_csv.py로 ubot 인계본을 적재용 CSV 4개로 변환하는 방법 — 실행 명령, 옵션, 대상 기준과 현재 건수, 자동 검증과 실패 시 동작, 실데이터 보안 주의사항.
   keywords: [build_import_csv.py, 스크립트, 실행 방법, 인계본, ubot, data/import, --include-history, 현행 서비스, 검증 실패, 건수, 보안, gitignore, 평문 비밀번호]
+
+- path: docs/guides/post-projects.md
+  title: 프로젝트 API 적재 가이드
+  category: guide
+  summary: scripts/post_projects.py로 project_module.csv를 POST /contents로 한 행씩 보내는 방법 — 요청 형식, date_start KST→UTC 변환, 환경변수 API 키, dry-run 기본값, 실패 행 재시도.
+  keywords: [post_projects.py, API, POST /contents, x-key, WOORI_API_KEY, dry-run, --send, --only, date_start, KST, UTC, 프로젝트 적재]
 ```
 
 ## 문서 외 자료
@@ -38,6 +45,8 @@
 ```yaml
 - path: scripts/build_import_csv.py
   summary: 인계본 → 적재용 CSV 변환과 명세 9장 자동 검증
+- path: scripts/post_projects.py
+  summary: project_module.csv → POST /contents 전송 (기본 dry-run)
 - path: examples/
   summary: 명세를 통과하는 가짜 값 예시 CSV 4개 (company, contact_module, project_module, service_module)
 ```
